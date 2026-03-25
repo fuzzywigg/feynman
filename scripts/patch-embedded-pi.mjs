@@ -1,28 +1,40 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { FEYNMAN_LOGO_HTML } from "../logo.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const appRoot = resolve(here, "..");
+const appRequire = createRequire(resolve(appRoot, "package.json"));
 const isGlobalInstall = process.env.npm_config_global === "true" || process.env.npm_config_location === "global";
 
-function findNodeModules() {
-	let dir = appRoot;
-	while (dir !== dirname(dir)) {
-		const nm = resolve(dir, "node_modules");
-		if (existsSync(nm)) return nm;
-		dir = dirname(dir);
-	}
-	return resolve(appRoot, "node_modules");
-}
-
-const nodeModules = findNodeModules();
-
 function findPackageRoot(packageName) {
-	const candidate = resolve(nodeModules, packageName);
-	if (existsSync(resolve(candidate, "package.json"))) return candidate;
+	const segments = packageName.split("/");
+	let current = appRoot;
+	while (current !== dirname(current)) {
+		for (const candidate of [resolve(current, "node_modules", ...segments), resolve(current, ...segments)]) {
+			if (existsSync(resolve(candidate, "package.json"))) {
+				return candidate;
+			}
+		}
+		current = dirname(current);
+	}
+
+	for (const spec of [`${packageName}/dist/index.js`, `${packageName}/dist/cli.js`, packageName]) {
+		try {
+			let current = dirname(appRequire.resolve(spec));
+			while (current !== dirname(current)) {
+				if (existsSync(resolve(current, "package.json"))) {
+					return current;
+				}
+				current = dirname(current);
+			}
+		} catch {
+			continue;
+		}
+	}
 	return null;
 }
 
@@ -31,15 +43,14 @@ const piTuiRoot = findPackageRoot("@mariozechner/pi-tui");
 const piAiRoot = findPackageRoot("@mariozechner/pi-ai");
 
 if (!piPackageRoot) {
-	console.warn("[feynman] pi-coding-agent not found, skipping patches");
-	process.exit(0);
+	console.warn("[feynman] pi-coding-agent not found, skipping Pi patches");
 }
 
-const packageJsonPath = resolve(piPackageRoot, "package.json");
-const cliPath = resolve(piPackageRoot, "dist", "cli.js");
-const bunCliPath = resolve(piPackageRoot, "dist", "bun", "cli.js");
-const interactiveModePath = resolve(piPackageRoot, "dist", "modes", "interactive", "interactive-mode.js");
-const interactiveThemePath = resolve(piPackageRoot, "dist", "modes", "interactive", "theme", "theme.js");
+const packageJsonPath = piPackageRoot ? resolve(piPackageRoot, "package.json") : null;
+const cliPath = piPackageRoot ? resolve(piPackageRoot, "dist", "cli.js") : null;
+const bunCliPath = piPackageRoot ? resolve(piPackageRoot, "dist", "bun", "cli.js") : null;
+const interactiveModePath = piPackageRoot ? resolve(piPackageRoot, "dist", "modes", "interactive", "interactive-mode.js") : null;
+const interactiveThemePath = piPackageRoot ? resolve(piPackageRoot, "dist", "modes", "interactive", "theme", "theme.js") : null;
 const editorPath = piTuiRoot ? resolve(piTuiRoot, "dist", "components", "editor.js") : null;
 const workspaceRoot = resolve(appRoot, ".feynman", "npm", "node_modules");
 const webAccessPath = resolve(workspaceRoot, "pi-web-access", "index.ts");
@@ -219,7 +230,7 @@ function ensurePandoc() {
 
 ensurePandoc();
 
-if (existsSync(packageJsonPath)) {
+if (packageJsonPath && existsSync(packageJsonPath)) {
 	const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 	if (pkg.piConfig?.name !== "feynman" || pkg.piConfig?.configDir !== ".feynman") {
 		pkg.piConfig = {
@@ -231,7 +242,7 @@ if (existsSync(packageJsonPath)) {
 	}
 }
 
-for (const entryPath of [cliPath, bunCliPath]) {
+for (const entryPath of [cliPath, bunCliPath].filter(Boolean)) {
 	if (!existsSync(entryPath)) {
 		continue;
 	}
@@ -242,7 +253,7 @@ for (const entryPath of [cliPath, bunCliPath]) {
 	}
 }
 
-if (existsSync(interactiveModePath)) {
+if (interactiveModePath && existsSync(interactiveModePath)) {
 	const interactiveModeSource = readFileSync(interactiveModePath, "utf8");
 	if (interactiveModeSource.includes("`π - ${sessionName} - ${cwdBasename}`")) {
 		writeFileSync(
@@ -255,7 +266,7 @@ if (existsSync(interactiveModePath)) {
 	}
 }
 
-if (existsSync(interactiveThemePath)) {
+if (interactiveThemePath && existsSync(interactiveThemePath)) {
 	let themeSource = readFileSync(interactiveThemePath, "utf8");
 	const desiredGetEditorTheme = [
 		"export function getEditorTheme() {",

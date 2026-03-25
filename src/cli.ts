@@ -293,6 +293,7 @@ export async function main(): Promise<void> {
 			cwd: { type: "string" },
 			doctor: { type: "boolean" },
 			help: { type: "boolean" },
+			version: { type: "boolean" },
 			"alpha-login": { type: "boolean" },
 			"alpha-logout": { type: "boolean" },
 			"alpha-status": { type: "boolean" },
@@ -308,6 +309,14 @@ export async function main(): Promise<void> {
 	if (values.help) {
 		printHelp(appRoot);
 		return;
+	}
+
+	if (values.version) {
+		if (feynmanVersion) {
+			console.log(feynmanVersion);
+			return;
+		}
+		throw new Error("Unable to determine the installed Feynman version.");
 	}
 
 	const workingDir = resolve(values.cwd ?? process.cwd());
