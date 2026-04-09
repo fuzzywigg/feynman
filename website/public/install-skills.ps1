@@ -92,8 +92,9 @@ try {
   }
 
   $skillsSource = Join-Path $sourceRoot.FullName "skills"
-  if (-not (Test-Path $skillsSource)) {
-    throw "Could not find skills/ in downloaded archive."
+  $promptsSource = Join-Path $sourceRoot.FullName "prompts"
+  if (-not (Test-Path $skillsSource) -or -not (Test-Path $promptsSource)) {
+    throw "Could not find the bundled skills resources in the downloaded archive."
   }
 
   $installParent = Split-Path $installDir -Parent
@@ -107,6 +108,10 @@ try {
 
   New-Item -ItemType Directory -Path $installDir -Force | Out-Null
   Copy-Item -Path (Join-Path $skillsSource "*") -Destination $installDir -Recurse -Force
+  New-Item -ItemType Directory -Path (Join-Path $installDir "prompts") -Force | Out-Null
+  Copy-Item -Path (Join-Path $promptsSource "*") -Destination (Join-Path $installDir "prompts") -Recurse -Force
+  Copy-Item -Path (Join-Path $sourceRoot.FullName "AGENTS.md") -Destination (Join-Path $installDir "AGENTS.md") -Force
+  Copy-Item -Path (Join-Path $sourceRoot.FullName "CONTRIBUTING.md") -Destination (Join-Path $installDir "CONTRIBUTING.md") -Force
 
   Write-Host "==> Installed skills to $installDir"
   if ($Scope -eq "Repo") {

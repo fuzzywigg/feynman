@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
-import { delimiter, dirname, resolve } from "node:path";
+import { delimiter, dirname, isAbsolute, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import {
 	BROWSER_FALLBACK_PATHS,
@@ -45,6 +46,10 @@ export function resolvePiPaths(appRoot: string) {
 		piWorkspaceNodeModulesPath: resolve(appRoot, ".feynman", "npm", "node_modules"),
 		nodeModulesBinPath: resolve(appRoot, "node_modules", ".bin"),
 	};
+}
+
+export function toNodeImportSpecifier(modulePath: string): string {
+	return isAbsolute(modulePath) ? pathToFileURL(modulePath).href : modulePath;
 }
 
 export function validatePiInstallation(appRoot: string): string[] {
@@ -97,6 +102,7 @@ export function buildPiEnv(options: PiRuntimeOptions): NodeJS.ProcessEnv {
 	const paths = resolvePiPaths(options.appRoot);
 	const feynmanNpmPrefixPath = getFeynmanNpmPrefixPath(options.feynmanAgentDir);
 	const feynmanNpmBinPath = resolve(feynmanNpmPrefixPath, "bin");
+	const feynmanWebSearchConfigPath = resolve(dirname(options.feynmanAgentDir), "web-search.json");
 
 	const currentPath = process.env.PATH ?? "";
 	const binEntries = [paths.nodeModulesBinPath, resolve(paths.piWorkspaceNodeModulesPath, ".bin"), feynmanNpmBinPath];
@@ -108,6 +114,7 @@ export function buildPiEnv(options: PiRuntimeOptions): NodeJS.ProcessEnv {
 		FEYNMAN_VERSION: options.feynmanVersion,
 		FEYNMAN_SESSION_DIR: options.sessionDir,
 		FEYNMAN_MEMORY_DIR: resolve(dirname(options.feynmanAgentDir), "memory"),
+		FEYNMAN_WEB_SEARCH_CONFIG: feynmanWebSearchConfigPath,
 		FEYNMAN_NODE_EXECUTABLE: process.execPath,
 		FEYNMAN_BIN_PATH: resolve(options.appRoot, "bin", "feynman.js"),
 		FEYNMAN_NPM_PREFIX: feynmanNpmPrefixPath,

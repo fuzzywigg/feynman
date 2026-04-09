@@ -5,7 +5,7 @@ description: Plan or execute a replication of a paper, claim, or benchmark. Use 
 
 # Replication
 
-Run the `/replicate` workflow. Read the prompt template at `prompts/replicate.md` for the full procedure.
+Run the `/replicate` workflow. Read the prompt template at `../prompts/replicate.md` for the full procedure.
 
 Agents used: `researcher`
 

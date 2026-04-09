@@ -5,7 +5,7 @@ description: Contribute changes to the Feynman repository itself. Use when the t
 
 # Contributing
 
-Read `CONTRIBUTING.md` first, then `AGENTS.md` for repo-level agent conventions.
+Read `../CONTRIBUTING.md` first, then `../AGENTS.md` for repo-level agent conventions.
 
 Use this skill when working on Feynman itself, especially for:
 

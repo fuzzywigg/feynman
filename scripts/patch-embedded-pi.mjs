@@ -1,14 +1,21 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { FEYNMAN_LOGO_HTML } from "../logo.mjs";
 import { patchPiExtensionLoaderSource } from "./lib/pi-extension-loader-patch.mjs";
+import { PI_WEB_ACCESS_PATCH_TARGETS, patchPiWebAccessSource } from "./lib/pi-web-access-patch.mjs";
 import { PI_SUBAGENTS_PATCH_TARGETS, patchPiSubagentsSource } from "./lib/pi-subagents-patch.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const appRoot = resolve(here, "..");
+const feynmanHome = resolve(process.env.FEYNMAN_HOME ?? homedir(), ".feynman");
+const feynmanNpmPrefix = resolve(feynmanHome, "npm-global");
+process.env.FEYNMAN_NPM_PREFIX = feynmanNpmPrefix;
+process.env.NPM_CONFIG_PREFIX = feynmanNpmPrefix;
+process.env.npm_config_prefix = feynmanNpmPrefix;
 const appRequire = createRequire(resolve(appRoot, "package.json"));
 const isGlobalInstall = process.env.npm_config_global === "true" || process.env.npm_config_location === "global";
 
@@ -57,6 +64,15 @@ const extensionLoaderPath = piPackageRoot ? resolve(piPackageRoot, "dist", "core
 const terminalPath = piTuiRoot ? resolve(piTuiRoot, "dist", "terminal.js") : null;
 const editorPath = piTuiRoot ? resolve(piTuiRoot, "dist", "components", "editor.js") : null;
 const workspaceRoot = resolve(appRoot, ".feynman", "npm", "node_modules");
+const workspaceExtensionLoaderPath = resolve(
+	workspaceRoot,
+	"@mariozechner",
+	"pi-coding-agent",
+	"dist",
+	"core",
+	"extensions",
+	"loader.js",
+);
 const vendorOverrideRoot = resolve(appRoot, ".feynman", "vendor-overrides");
 const piSubagentsRoot = resolve(workspaceRoot, "pi-subagents");
 const webAccessPath = resolve(workspaceRoot, "pi-web-access", "index.ts");
@@ -76,7 +92,17 @@ const workspaceArchivePath = resolve(appRoot, ".feynman", "runtime-workspace.tgz
 function createInstallCommand(packageManager, packageSpecs) {
 	switch (packageManager) {
 		case "npm":
-			return ["install", "--prefer-offline", "--no-audit", "--no-fund", "--loglevel", "error", ...packageSpecs];
+			return [
+				"install",
+				"--global=false",
+				"--location=project",
+				"--prefer-offline",
+				"--no-audit",
+				"--no-fund",
+				"--loglevel",
+				"error",
+				...packageSpecs,
+			];
 		case "pnpm":
 			return ["add", "--prefer-offline", "--reporter", "silent", ...packageSpecs];
 		case "bun":
@@ -367,11 +393,15 @@ if (interactiveModePath && existsSync(interactiveModePath)) {
 	}
 }
 
-if (extensionLoaderPath && existsSync(extensionLoaderPath)) {
-	const source = readFileSync(extensionLoaderPath, "utf8");
+for (const loaderPath of [extensionLoaderPath, workspaceExtensionLoaderPath].filter(Boolean)) {
+	if (!existsSync(loaderPath)) {
+		continue;
+	}
+
+	const source = readFileSync(loaderPath, "utf8");
 	const patched = patchPiExtensionLoaderSource(source);
 	if (patched !== source) {
-		writeFileSync(extensionLoaderPath, patched, "utf8");
+		writeFileSync(loaderPath, patched, "utf8");
 	}
 }
 
@@ -557,6 +587,21 @@ if (existsSync(webAccessPath)) {
 			source.replace('pi.registerCommand("search",', 'pi.registerCommand("web-results",'),
 			"utf8",
 		);
+	}
+}
+
+const piWebAccessRoot = resolve(workspaceRoot, "pi-web-access");
+
+if (existsSync(piWebAccessRoot)) {
+	for (const relativePath of PI_WEB_ACCESS_PATCH_TARGETS) {
+		const entryPath = resolve(piWebAccessRoot, relativePath);
+		if (!existsSync(entryPath)) continue;
+
+		const source = readFileSync(entryPath, "utf8");
+		const patched = patchPiWebAccessSource(relativePath, source);
+		if (patched !== source) {
+			writeFileSync(entryPath, patched, "utf8");
+		}
 	}
 }
 

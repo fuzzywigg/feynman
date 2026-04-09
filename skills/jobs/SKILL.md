@@ -5,6 +5,6 @@ description: Inspect active background research work including running processes
 
 # Jobs
 
-Run the `/jobs` workflow. Read the prompt template at `prompts/jobs.md` for the full procedure.
+Run the `/jobs` workflow. Read the prompt template at `../prompts/jobs.md` for the full procedure.
 
 Shows active `pi-processes`, scheduled `pi-schedule-prompt` entries, and running subagent tasks.

@@ -5,6 +5,6 @@ description: Write a durable session log capturing completed work, findings, ope
 
 # Session Log
 
-Run the `/log` workflow. Read the prompt template at `prompts/log.md` for the full procedure.
+Run the `/log` workflow. Read the prompt template at `../prompts/log.md` for the full procedure.
 
 Output: session log in `notes/session-logs/`.

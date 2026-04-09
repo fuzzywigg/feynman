@@ -5,7 +5,7 @@ description: Run a thorough, source-heavy investigation on any topic. Use when t
 
 # Deep Research
 
-Run the `/deepresearch` workflow. Read the prompt template at `prompts/deepresearch.md` for the full procedure.
+Run the `/deepresearch` workflow. Read the prompt template at `../prompts/deepresearch.md` for the full procedure.
 
 Agents used: `researcher`, `verifier`, `reviewer`
 

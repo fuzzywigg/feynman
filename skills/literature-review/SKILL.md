@@ -5,7 +5,7 @@ description: Run a literature review using paper search and primary-source synth
 
 # Literature Review
 
-Run the `/lit` workflow. Read the prompt template at `prompts/lit.md` for the full procedure.
+Run the `/lit` workflow. Read the prompt template at `../prompts/lit.md` for the full procedure.
 
 Agents used: `researcher`, `verifier`, `reviewer`
 

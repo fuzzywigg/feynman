@@ -5,7 +5,7 @@ description: Turn research findings into a polished paper-style draft with secti
 
 # Paper Writing
 
-Run the `/draft` workflow. Read the prompt template at `prompts/draft.md` for the full procedure.
+Run the `/draft` workflow. Read the prompt template at `../prompts/draft.md` for the full procedure.
 
 Agents used: `writer`, `verifier`
 

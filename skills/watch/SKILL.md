@@ -5,7 +5,7 @@ description: Set up a recurring research watch on a topic, company, paper area, 
 
 # Watch
 
-Run the `/watch` workflow. Read the prompt template at `prompts/watch.md` for the full procedure.
+Run the `/watch` workflow. Read the prompt template at `../prompts/watch.md` for the full procedure.
 
 Agents used: `researcher`
 

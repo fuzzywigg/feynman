@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 
-import { buildPiArgs, buildPiEnv, type PiRuntimeOptions, resolvePiPaths } from "./runtime.js";
+import { buildPiArgs, buildPiEnv, type PiRuntimeOptions, resolvePiPaths, toNodeImportSpecifier } from "./runtime.js";
 import { ensureSupportedNodeVersion } from "../system/node-version.js";
 
 export async function launchPiChat(options: PiRuntimeOptions): Promise<void> {
@@ -23,8 +23,8 @@ export async function launchPiChat(options: PiRuntimeOptions): Promise<void> {
 	}
 
 	const importArgs = useDevPolyfill
-		? ["--import", tsxLoaderPath, "--import", promisePolyfillSourcePath]
-		: ["--import", promisePolyfillPath];
+		? ["--import", toNodeImportSpecifier(tsxLoaderPath), "--import", toNodeImportSpecifier(promisePolyfillSourcePath)]
+		: ["--import", toNodeImportSpecifier(promisePolyfillPath)];
 
 	const child = spawn(process.execPath, [...importArgs, piCliPath, ...buildPiArgs(options)], {
 		cwd: options.workingDir,

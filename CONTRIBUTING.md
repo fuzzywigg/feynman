@@ -59,6 +59,7 @@ npm run build
 - Avoid refactor-only PRs unless they are necessary to unblock a real fix or requested by a maintainer.
 - Do not silently change release behavior, installer behavior, or runtime defaults without documenting the reason in the PR.
 - Use American English in docs, comments, prompts, UI copy, and examples.
+- Do not add bundled prompts, skills, or docs whose primary purpose is to market, endorse, or funnel users toward a third-party product or service. Product integrations must be justified by user-facing utility and written in neutral language.
 
 ## Repo-Specific Checks
 

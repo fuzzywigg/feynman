@@ -181,8 +181,8 @@ step "Extracting skills"
 tar -xzf "$archive_path" -C "$extract_dir"
 
 source_root="$(find "$extract_dir" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
-if [ -z "$source_root" ] || [ ! -d "$source_root/skills" ]; then
-  echo "Could not find skills/ in downloaded archive." >&2
+if [ -z "$source_root" ] || [ ! -d "$source_root/skills" ] || [ ! -d "$source_root/prompts" ]; then
+  echo "Could not find the bundled skills resources in the downloaded archive." >&2
   exit 1
 fi
 
@@ -190,6 +190,10 @@ mkdir -p "$(dirname "$install_dir")"
 rm -rf "$install_dir"
 mkdir -p "$install_dir"
 cp -R "$source_root/skills/." "$install_dir/"
+mkdir -p "$install_dir/prompts"
+cp -R "$source_root/prompts/." "$install_dir/prompts/"
+cp "$source_root/AGENTS.md" "$install_dir/AGENTS.md"
+cp "$source_root/CONTRIBUTING.md" "$install_dir/CONTRIBUTING.md"
 
 step "Installed skills to $install_dir"
 case "$SCOPE" in

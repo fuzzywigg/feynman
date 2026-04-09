@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
 
-import { applyFeynmanPackageManagerEnv, buildPiArgs, buildPiEnv, resolvePiPaths } from "../src/pi/runtime.js";
+import { applyFeynmanPackageManagerEnv, buildPiArgs, buildPiEnv, resolvePiPaths, toNodeImportSpecifier } from "../src/pi/runtime.js";
 
 test("buildPiArgs includes configured runtime paths and prompt", () => {
 	const args = buildPiArgs({
@@ -105,4 +106,12 @@ test("resolvePiPaths includes the Promise.withResolvers polyfill path", () => {
 	const paths = resolvePiPaths("/repo/feynman");
 
 	assert.equal(paths.promisePolyfillPath, "/repo/feynman/dist/system/promise-polyfill.js");
+});
+
+test("toNodeImportSpecifier converts absolute preload paths to file URLs", () => {
+	assert.equal(
+		toNodeImportSpecifier("/repo/feynman/dist/system/promise-polyfill.js"),
+		pathToFileURL("/repo/feynman/dist/system/promise-polyfill.js").href,
+	);
+	assert.equal(toNodeImportSpecifier("tsx"), "tsx");
 });

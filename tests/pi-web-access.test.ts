@@ -67,6 +67,17 @@ test("getPiWebAccessStatus reads Gemini routes directly", () => {
 	assert.equal(status.chromeProfile, "Profile 2");
 });
 
+test("getPiWebAccessStatus supports the legacy route key", () => {
+	const status = getPiWebAccessStatus({
+		route: "perplexity",
+		perplexityApiKey: "pplx_...",
+	});
+
+	assert.equal(status.routeLabel, "Perplexity");
+	assert.equal(status.requestProvider, "perplexity");
+	assert.equal(status.perplexityConfigured, true);
+});
+
 test("formatPiWebAccessDoctorLines reports Pi-managed web access", () => {
 	const lines = formatPiWebAccessDoctorLines(
 		getPiWebAccessStatus({

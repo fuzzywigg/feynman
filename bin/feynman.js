@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+
 const MIN_NODE_VERSION = "20.19.0";
 
 function parseNodeVersion(version) {
@@ -27,5 +30,7 @@ if (compareNodeVersions(parseNodeVersion(process.versions.node), parseNodeVersio
     : "curl -fsSL https://feynman.is/install | bash");
   process.exit(1);
 }
-await import(new URL("../scripts/patch-embedded-pi.mjs", import.meta.url).href);
-await import(new URL("../dist/index.js", import.meta.url).href);
+const here = import.meta.dirname;
+
+await import(pathToFileURL(resolve(here, "..", "scripts", "patch-embedded-pi.mjs")).href);
+await import(pathToFileURL(resolve(here, "..", "dist", "index.js")).href);

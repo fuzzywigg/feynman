@@ -25,7 +25,7 @@ curl -fsSL https://feynman.is/install | bash
 irm https://feynman.is/install.ps1 | iex
 ```
 
-The one-line installer fetches the latest tagged release. To pin a version, pass it explicitly, for example `curl -fsSL https://feynman.is/install | bash -s -- 0.2.16`.
+The one-line installer fetches the latest tagged release. To pin a version, pass it explicitly, for example `curl -fsSL https://feynman.is/install | bash -s -- 0.2.17`.
 
 If you install via `pnpm` or `bun` instead of the standalone bundle, Feynman requires Node.js `20.19.0` or newer.
 
@@ -62,6 +62,8 @@ curl -fsSL https://feynman.is/install-skills | bash -s -- --repo
 ```
 
 That installs into `.agents/skills/feynman` under the current repository.
+
+These installers download the bundled `skills/` and `prompts/` trees plus the repo guidance files referenced by those skills. They do not install the Feynman terminal, bundled Node runtime, auth storage, or Pi packages.
 
 ---
 

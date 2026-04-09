@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 export type PiWebSearchProvider = "auto" | "perplexity" | "exa" | "gemini";
 
 export type PiWebAccessConfig = Record<string, unknown> & {
+	route?: PiWebSearchProvider;
 	provider?: PiWebSearchProvider;
 	searchProvider?: PiWebSearchProvider;
 	perplexityApiKey?: string;
@@ -80,8 +81,9 @@ export function getPiWebAccessStatus(
 	config: PiWebAccessConfig = loadPiWebAccessConfig(),
 	configPath = getPiWebSearchConfigPath(),
 ): PiWebAccessStatus {
-	const searchProvider = normalizeProvider(config.searchProvider) ?? "auto";
-	const requestProvider = normalizeProvider(config.provider) ?? searchProvider;
+	const searchProvider =
+		normalizeProvider(config.searchProvider) ?? normalizeProvider(config.route) ?? normalizeProvider(config.provider) ?? "auto";
+	const requestProvider = normalizeProvider(config.provider) ?? normalizeProvider(config.route) ?? searchProvider;
 	const perplexityConfigured = Boolean(normalizeNonEmptyString(config.perplexityApiKey));
 	const exaConfigured = Boolean(normalizeNonEmptyString(config.exaApiKey));
 	const geminiApiConfigured = Boolean(normalizeNonEmptyString(config.geminiApiKey));

@@ -5,7 +5,7 @@ description: Compare multiple sources on a topic and produce a grounded comparis
 
 # Source Comparison
 
-Run the `/compare` workflow. Read the prompt template at `prompts/compare.md` for the full procedure.
+Run the `/compare` workflow. Read the prompt template at `../prompts/compare.md` for the full procedure.
 
 Agents used: `researcher`, `verifier`
 
