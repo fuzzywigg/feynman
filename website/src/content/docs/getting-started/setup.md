@@ -28,7 +28,7 @@ Feynman supports multiple model providers. The setup wizard presents a list of a
   google:gemini-2.5-pro
 ```
 
-The model you choose here becomes the default for all sessions. You can override it per-session with the `--model` flag or change it later via `feynman model set <provider:model>`.
+The model you choose here becomes the default for all sessions. You can override it per-session with the `--model` flag or change it later via `feynman model set <provider/model>` or `feynman model set <provider:model>`.
 
 ## Stage 2: Authentication
 
@@ -41,6 +41,16 @@ For API key providers, you are prompted to paste your key directly:
 ```
 
 Keys are encrypted at rest and never sent anywhere except the provider's API endpoint.
+
+### Amazon Bedrock
+
+For Amazon Bedrock, choose:
+
+```text
+Amazon Bedrock (AWS credential chain)
+```
+
+Feynman verifies the same AWS credential chain Pi uses at runtime, including `AWS_PROFILE`, `~/.aws` credentials/config, SSO, ECS/IRSA, and EC2 instance roles. Once that check passes, Bedrock models become available in `feynman model list` without needing a traditional API key.
 
 ### Local models: Ollama, LM Studio, vLLM
 

@@ -74,3 +74,5 @@ feynman update pi-subagents
 ```
 
 Running `feynman update` without arguments updates everything. Pass a specific package name to update just that one. Updates are safe and preserve your configuration.
+
+This command updates Pi packages inside Feynman's environment. To upgrade the standalone Feynman app itself, rerun the installer from the [Installation guide](/docs/getting-started/installation).

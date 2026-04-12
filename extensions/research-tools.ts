@@ -11,11 +11,8 @@ import { registerServiceTierControls } from "./research-tools/service-tier.js";
 export default function researchTools(pi: ExtensionAPI): void {
 	const cache: { agentSummaryPromise?: Promise<{ agents: string[]; chains: string[] }> } = {};
 
+	// Pi 0.66.x folds post-switch/resume lifecycle into session_start.
 	pi.on("session_start", async (_event, ctx) => {
-		await installFeynmanHeader(pi, ctx, cache);
-	});
-
-	pi.on("session_switch", async (_event, ctx) => {
 		await installFeynmanHeader(pi, ctx, cache);
 	});
 

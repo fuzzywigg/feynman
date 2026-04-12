@@ -27,6 +27,12 @@ irm https://feynman.is/install.ps1 | iex
 
 This installs the Windows runtime bundle under `%LOCALAPPDATA%\Programs\feynman`, adds its launcher to your user `PATH`, and lets you re-run the installer at any time to update.
 
+## Updating the standalone app
+
+To update the standalone Feynman app on macOS, Linux, or Windows, rerun the installer you originally used. That replaces the downloaded runtime bundle with the latest tagged release.
+
+`feynman update` is different: it updates installed Pi packages inside Feynman's environment, not the standalone app bundle itself.
+
 ## Skills only
 
 If you only want Feynman's research skills and not the full terminal runtime, install the skill library separately.

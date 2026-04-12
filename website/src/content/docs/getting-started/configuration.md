@@ -22,17 +22,18 @@ The `settings.json` file is the primary configuration file. It is created by `fe
 
 ```json
 {
-  "defaultModel": "anthropic:claude-sonnet-4-20250514",
-  "thinkingLevel": "medium"
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-sonnet-4-20250514",
+  "defaultThinkingLevel": "medium"
 }
 ```
 
 ## Model configuration
 
-The `defaultModel` field sets which model is used when you launch Feynman without the `--model` flag. The format is `provider:model-name`. You can change it via the CLI:
+The `defaultProvider` and `defaultModel` fields set which model is used when you launch Feynman without the `--model` flag. You can change them via the CLI:
 
 ```bash
-feynman model set anthropic:claude-opus-4-20250514
+feynman model set anthropic/claude-opus-4-20250514
 ```
 
 To see all models you have configured:
@@ -48,6 +49,7 @@ To add another provider, authenticate it first:
 ```bash
 feynman model login anthropic
 feynman model login google
+feynman model login amazon-bedrock
 ```
 
 Then switch the default model:
@@ -55,6 +57,8 @@ Then switch the default model:
 ```bash
 feynman model set anthropic/claude-opus-4-6
 ```
+
+The `model set` command accepts both `provider/model` and `provider:model` formats. `feynman model login google` opens the API-key flow directly, while `feynman model login amazon-bedrock` verifies the AWS credential chain that Pi uses for Bedrock access.
 
 ## Subagent model overrides
 
@@ -90,7 +94,8 @@ Feynman respects the following environment variables, which take precedence over
 | `FEYNMAN_THINKING` | Override the thinking level |
 | `ANTHROPIC_API_KEY` | Anthropic API key |
 | `OPENAI_API_KEY` | OpenAI API key |
-| `GOOGLE_API_KEY` | Google AI API key |
+| `GEMINI_API_KEY` | Google Gemini API key |
+| `AWS_PROFILE` | Preferred AWS profile for Amazon Bedrock |
 | `TAVILY_API_KEY` | Tavily web search API key |
 | `SERPER_API_KEY` | Serper web search API key |
 

@@ -130,7 +130,7 @@ async function handleModelCommand(subcommand: string | undefined, args: string[]
 
 	if (subcommand === "login") {
 		if (args[0]) {
-			// Specific provider given - use OAuth login directly
+			// Specific provider given - resolve OAuth vs API-key setup automatically
 			await loginModelProvider(feynmanAuthPath, args[0], feynmanSettingsPath);
 		} else {
 			// No provider specified - show auth method choice
@@ -147,7 +147,7 @@ async function handleModelCommand(subcommand: string | undefined, args: string[]
 	if (subcommand === "set") {
 		const spec = args[0];
 		if (!spec) {
-			throw new Error("Usage: feynman model set <provider/model>");
+			throw new Error("Usage: feynman model set <provider/model|provider:model>");
 		}
 		setDefaultModelSpec(feynmanSettingsPath, feynmanAuthPath, spec);
 		return;
