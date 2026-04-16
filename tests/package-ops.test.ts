@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { installPackageSources, seedBundledWorkspacePackages } from "../src/pi/package-ops.js";
+import { installPackageSources, seedBundledWorkspacePackages, updateConfiguredPackages } from "../src/pi/package-ops.js";
 
 function createBundledWorkspace(appRoot: string, packageNames: string[]): void {
 	for (const packageName of packageNames) {
@@ -16,6 +16,16 @@ function createBundledWorkspace(appRoot: string, packageNames: string[]): void {
 			"utf8",
 		);
 	}
+}
+
+function createInstalledGlobalPackage(homeRoot: string, packageName: string, version = "1.0.0"): void {
+	const packageDir = resolve(homeRoot, "npm-global", "lib", "node_modules", packageName);
+	mkdirSync(packageDir, { recursive: true });
+	writeFileSync(
+		join(packageDir, "package.json"),
+		JSON.stringify({ name: packageName, version }, null, 2) + "\n",
+		"utf8",
+	);
 }
 
 function writeSettings(agentDir: string, settings: Record<string, unknown>): void {
@@ -144,4 +154,102 @@ test("installPackageSources skips native packages on unsupported Node majors bef
 	} finally {
 		Object.defineProperty(process.versions, "node", { value: originalVersion, configurable: true });
 	}
+});
+
+test("updateConfiguredPackages batches multiple npm updates into a single install per scope", async () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-package-ops-"));
+	const workingDir = resolve(root, "project");
+	const agentDir = resolve(root, "agent");
+	const logPath = resolve(root, "npm-invocations.jsonl");
+	mkdirSync(workingDir, { recursive: true });
+
+	const scriptPath = writeFakeNpmScript(root, [
+		`import { appendFileSync } from "node:fs";`,
+		`import { resolve } from "node:path";`,
+		`const args = process.argv.slice(2);`,
+		`if (args.length === 2 && args[0] === "root" && args[1] === "-g") {`,
+		`  console.log(resolve(${JSON.stringify(root)}, "npm-global", "lib", "node_modules"));`,
+		`  process.exit(0);`,
+		`}`,
+		`appendFileSync(${JSON.stringify(logPath)}, JSON.stringify(args) + "\\n", "utf8");`,
+		"process.exit(0);",
+	].join("\n"));
+
+	writeSettings(agentDir, {
+		npmCommand: [process.execPath, scriptPath],
+		packages: ["npm:test-one", "npm:test-two"],
+	});
+	createInstalledGlobalPackage(root, "test-one", "1.0.0");
+	createInstalledGlobalPackage(root, "test-two", "1.0.0");
+
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = (async () => ({
+		ok: true,
+		json: async () => ({ version: "2.0.0" }),
+	})) as typeof fetch;
+
+	try {
+		const result = await updateConfiguredPackages(workingDir, agentDir);
+		assert.deepEqual(result.skipped, []);
+		assert.deepEqual(result.updated.sort(), ["npm:test-one", "npm:test-two"]);
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+
+	const invocations = readFileSync(logPath, "utf8").trim().split("\n").map((line) => JSON.parse(line) as string[]);
+	assert.equal(invocations.length, 1);
+	assert.ok(invocations[0]?.includes("install"));
+	assert.ok(invocations[0]?.includes("test-one@latest"));
+	assert.ok(invocations[0]?.includes("test-two@latest"));
+});
+
+test("updateConfiguredPackages skips native package updates on unsupported Node majors", async () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-package-ops-"));
+	const workingDir = resolve(root, "project");
+	const agentDir = resolve(root, "agent");
+	const logPath = resolve(root, "npm-invocations.jsonl");
+	mkdirSync(workingDir, { recursive: true });
+
+	const scriptPath = writeFakeNpmScript(root, [
+		`import { appendFileSync } from "node:fs";`,
+		`import { resolve } from "node:path";`,
+		`const args = process.argv.slice(2);`,
+		`if (args.length === 2 && args[0] === "root" && args[1] === "-g") {`,
+		`  console.log(resolve(${JSON.stringify(root)}, "npm-global", "lib", "node_modules"));`,
+		`  process.exit(0);`,
+		`}`,
+		`appendFileSync(${JSON.stringify(logPath)}, JSON.stringify(args) + "\\n", "utf8");`,
+		"process.exit(0);",
+	].join("\n"));
+
+	writeSettings(agentDir, {
+		npmCommand: [process.execPath, scriptPath],
+		packages: ["npm:@kaiserlich-dev/pi-session-search", "npm:test-regular"],
+	});
+	createInstalledGlobalPackage(root, "@kaiserlich-dev/pi-session-search", "1.0.0");
+	createInstalledGlobalPackage(root, "test-regular", "1.0.0");
+
+	const originalFetch = globalThis.fetch;
+	const originalVersion = process.versions.node;
+	globalThis.fetch = (async () => ({
+		ok: true,
+		json: async () => ({ version: "2.0.0" }),
+	})) as typeof fetch;
+	Object.defineProperty(process.versions, "node", { value: "25.0.0", configurable: true });
+
+	try {
+		const result = await updateConfiguredPackages(workingDir, agentDir);
+		assert.deepEqual(result.updated, ["npm:test-regular"]);
+		assert.deepEqual(result.skipped, ["npm:@kaiserlich-dev/pi-session-search"]);
+	} finally {
+		globalThis.fetch = originalFetch;
+		Object.defineProperty(process.versions, "node", { value: originalVersion, configurable: true });
+	}
+
+	const invocations = existsSync(logPath)
+		? readFileSync(logPath, "utf8").trim().split("\n").filter(Boolean).map((line) => JSON.parse(line) as string[])
+		: [];
+	assert.equal(invocations.length, 1);
+	assert.ok(invocations[0]?.includes("test-regular@latest"));
+	assert.ok(!invocations[0]?.some((entry) => entry.includes("pi-session-search")));
 });
