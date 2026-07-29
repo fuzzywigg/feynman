@@ -169,3 +169,26 @@ npm run build
 ```
 
 [Docs](https://feynman.is/docs) · [Release Notes](RELEASES.md) · [MIT License](LICENSE)
+
+---
+
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/fuzzywigg/feynman.git
+cd feynman
+
+# See Installation section for setup steps
+```
+
+## Installation
+
+<!-- TODO: Add installation steps -->
+> ⚠️ Installation steps not yet documented.
+
+## License
+
+<!-- TODO: Confirm and add license -->
+> ⚠️ License not yet specified.
+
