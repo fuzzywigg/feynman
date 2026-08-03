@@ -1,3 +1,40 @@
+## Fork Notice
+
+> [!IMPORTANT]
+> This is [fuzzywigg](https://github.com/fuzzywigg)'s security-patched fork of
+> [companion-inc/feynman](https://github.com/companion-inc/feynman). It tracks upstream
+> **v0.2.40** (the fork point; upstream has since moved on to the 0.3.x line) and layers
+> local dependency security fixes on top. To use this fork, clone
+> `https://github.com/fuzzywigg/feynman.git` — everything below the notice is the
+> upstream README.
+
+**Local security overrides** — pinned via the `overrides` field, which is the
+authoritative list if this table ever drifts:
+
+| File | Override path | Pinned version |
+| --- | --- | --- |
+| [`package.json`](package.json) | `basic-ftp` (top-level, and again under `proxy-agent → pac-proxy-agent → get-uri`) | 5.3.0 |
+| [`package.json`](package.json) | `@modelcontextprotocol/sdk → @hono/node-server` | 1.19.14 |
+| [`package.json`](package.json) | `@modelcontextprotocol/sdk → hono` | 4.12.34 |
+| [`package.json`](package.json) | `express → router → path-to-regexp` | 8.4.2 |
+| [`package.json`](package.json) | `protobufjs` | 7.5.5 |
+| [`package.json`](package.json) | `minimatch → brace-expansion` | 5.0.9 |
+| [`website/package.json`](website/package.json) | `@modelcontextprotocol/sdk → @hono/node-server` | 1.19.14 |
+| [`website/package.json`](website/package.json) | `@modelcontextprotocol/sdk → hono` | 4.12.34 |
+| [`website/package.json`](website/package.json) | `router → path-to-regexp` | 8.4.2 |
+| [`website/package.json`](website/package.json) | `defu` | 6.1.7 |
+| [`website/package.json`](website/package.json) | `js-yaml` | 4.3.1 |
+| [`website/package.json`](website/package.json) | `vite` | 6.4.2 |
+| [`website/package.json`](website/package.json) | `brace-expansion` | 1.1.17 |
+| [`website/package.json`](website/package.json) | `yaml` | 2.8.3 |
+
+**This fork never publishes to npm.** The release workflow
+([`.github/workflows/publish.yml`](.github/workflows/publish.yml)) is fork-guarded with
+`if: github.repository == 'companion-inc/feynman'` on its entry job, so all
+publish/release jobs are skipped on this repository.
+
+---
+
 <p align="center">
   <a href="https://feynman.is">
     <img src="assets/hero.png" alt="Feynman CLI" width="800" />
@@ -169,26 +206,4 @@ npm run build
 ```
 
 [Docs](https://feynman.is/docs) · [Release Notes](RELEASES.md) · [MIT License](LICENSE)
-
----
-
-## Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/fuzzywigg/feynman.git
-cd feynman
-
-# See Installation section for setup steps
-```
-
-## Installation
-
-<!-- TODO: Add installation steps -->
-> ⚠️ Installation steps not yet documented.
-
-## License
-
-<!-- TODO: Confirm and add license -->
-> ⚠️ License not yet specified.
 
