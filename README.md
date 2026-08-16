@@ -14,12 +14,12 @@ authoritative list if this table ever drifts:
 | File | Override path | Pinned version |
 | --- | --- | --- |
 | [`package.json`](package.json) | `basic-ftp` (top-level, and again under `proxy-agent → pac-proxy-agent → get-uri`) | 5.3.0 |
-| [`package.json`](package.json) | `@modelcontextprotocol/sdk → @hono/node-server` | 1.19.14 |
+| [`package.json`](package.json) | `@modelcontextprotocol/sdk → @hono/node-server` | 2.0.12 |
 | [`package.json`](package.json) | `@modelcontextprotocol/sdk → hono` | 4.12.34 |
 | [`package.json`](package.json) | `express → router → path-to-regexp` | 8.4.2 |
 | [`package.json`](package.json) | `protobufjs` | 7.5.5 |
 | [`package.json`](package.json) | `minimatch → brace-expansion` | 5.0.9 |
-| [`website/package.json`](website/package.json) | `@modelcontextprotocol/sdk → @hono/node-server` | 1.19.14 |
+| [`website/package.json`](website/package.json) | `@modelcontextprotocol/sdk → @hono/node-server` | 2.0.12 |
 | [`website/package.json`](website/package.json) | `@modelcontextprotocol/sdk → hono` | 4.12.34 |
 | [`website/package.json`](website/package.json) | `router → path-to-regexp` | 8.4.2 |
 | [`website/package.json`](website/package.json) | `defu` | 6.1.7 |
