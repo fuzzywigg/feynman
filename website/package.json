@@ -37,15 +37,16 @@
   "overrides": {
     "@modelcontextprotocol/sdk": {
       "@hono/node-server": "2.0.12",
-      "hono": "4.12.34"
+      "hono": "4.13.7"
     },
     "router": {
       "path-to-regexp": "8.4.2"
     },
     "defu": "6.1.7",
-    "js-yaml": "4.3.1",
-    "vite": "6.4.2",
-    "brace-expansion": "1.1.17",
+    "js-yaml": "4.3.2",
+    "vite": "6.4.3",
+    "brace-expansion": "1.1.18",
+    "nanoid": "3.3.19",
     "yaml": "2.8.3"
   },
   "devDependencies": {
