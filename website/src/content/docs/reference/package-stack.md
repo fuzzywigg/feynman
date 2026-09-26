@@ -13,6 +13,7 @@ These are installed by default with every Feynman installation. They provide the
 
 | Package | Purpose |
 | --- | --- |
+| `@companion-ai/alpha-hub` | AlphaXiv authentication and the `alpha` paper CLI. Powers academic paper search, Q&A, and code inspection |
 | `pi-subagents` | Parallel agent spawning for literature gathering and task decomposition. Powers the multi-agent workflows |
 | `pi-btw` | Fast side-thread `/btw` conversations without interrupting the main research run |
 | `pi-docparser` | Parse PDFs, Office documents, spreadsheets, and images for content extraction |
