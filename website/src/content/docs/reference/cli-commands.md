@@ -104,6 +104,7 @@ These are equivalent to `/jobs` and `/log` in the REPL. Use `feynman jobs` to in
 | --- | --- |
 | `--prompt "<text>"` | Run one prompt and exit (one-shot mode) |
 | `--model <provider/model|provider:model>` | Force a specific model for this session |
+| `--mode <mode>` | Pass Pi session mode through to the runtime (`text`, `json`, or `rpc`) |
 | `--service-tier <tier>` | Override request service tier for this run (`auto`, `default`, `flex`, `priority`, `standard_only`) |
 | `--thinking <level>` | Set thinking level: `off`, `minimal`, `low`, `medium`, `high`, `xhigh` |
 | `--cwd <path>` | Set the working directory for all file operations |
