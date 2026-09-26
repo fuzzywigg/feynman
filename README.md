@@ -13,19 +13,21 @@ authoritative list if this table ever drifts:
 
 | File | Override path | Pinned version |
 | --- | --- | --- |
-| [`package.json`](package.json) | `basic-ftp` (top-level, and again under `proxy-agent → pac-proxy-agent → get-uri`) | 5.3.0 |
+| [`package.json`](package.json) | `basic-ftp` (top-level, and again under `proxy-agent → pac-proxy-agent → get-uri`) | 5.3.1 |
 | [`package.json`](package.json) | `@modelcontextprotocol/sdk → @hono/node-server` | 2.0.12 |
-| [`package.json`](package.json) | `@modelcontextprotocol/sdk → hono` | 4.12.34 |
+| [`package.json`](package.json) | `@modelcontextprotocol/sdk → hono` | 4.13.7 |
 | [`package.json`](package.json) | `express → router → path-to-regexp` | 8.4.2 |
-| [`package.json`](package.json) | `protobufjs` | 7.5.5 |
+| [`package.json`](package.json) | `protobufjs` | 7.6.6 |
+| [`package.json`](package.json) | `fast-uri` | 3.1.7 |
 | [`package.json`](package.json) | `minimatch → brace-expansion` | 5.0.9 |
 | [`website/package.json`](website/package.json) | `@modelcontextprotocol/sdk → @hono/node-server` | 2.0.12 |
-| [`website/package.json`](website/package.json) | `@modelcontextprotocol/sdk → hono` | 4.12.34 |
+| [`website/package.json`](website/package.json) | `@modelcontextprotocol/sdk → hono` | 4.13.7 |
 | [`website/package.json`](website/package.json) | `router → path-to-regexp` | 8.4.2 |
 | [`website/package.json`](website/package.json) | `defu` | 6.1.7 |
-| [`website/package.json`](website/package.json) | `js-yaml` | 4.3.1 |
-| [`website/package.json`](website/package.json) | `vite` | 6.4.2 |
-| [`website/package.json`](website/package.json) | `brace-expansion` | 1.1.17 |
+| [`website/package.json`](website/package.json) | `js-yaml` | 4.3.2 |
+| [`website/package.json`](website/package.json) | `vite` | 6.4.3 |
+| [`website/package.json`](website/package.json) | `brace-expansion` | 1.1.18 |
+| [`website/package.json`](website/package.json) | `nanoid` | 3.3.19 |
 | [`website/package.json`](website/package.json) | `yaml` | 2.8.3 |
 
 **This fork never publishes to npm.** The release workflow
