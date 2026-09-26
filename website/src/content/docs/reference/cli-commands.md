@@ -87,6 +87,17 @@ feynman watch "topic"
 
 These are equivalent to launching the REPL and typing the corresponding slash command. `feynman summarize` also accepts optional window/threshold flags documented in the summarize prompt (`--window-size`, `--overlap`, `--tier1-threshold`, `--tier2-threshold`).
 
+## Project and session commands
+
+Two Project & Session slash commands are also registered as top-level CLI commands:
+
+```bash
+feynman jobs
+feynman log
+```
+
+These are equivalent to `/jobs` and `/log` in the REPL. Use `feynman jobs` to inspect active background work and scheduled follow-ups; use `feynman log` to write a durable session note.
+
 ## Flags
 
 | Flag | Description |
