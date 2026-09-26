@@ -11,14 +11,15 @@ Feynman stores all configuration and state under `~/.feynman/`. This directory i
 
 ```
 ~/.feynman/
-├── settings.json       # Core configuration
+├── agent/              # Agent workspace: settings.json, auth.json, synced agents/skills/themes
 ├── web-search.json     # Web search routing config
-├── auth/               # OAuth tokens and API keys
 ├── sessions/           # Persisted conversation history
-└── packages/           # Installed optional packages
+├── memory/             # Pi memory store
+├── npm-global/         # User-scoped npm prefix for installed Pi packages
+└── .state/             # Bootstrap and runtime state
 ```
 
-The `settings.json` file is the primary configuration file. It is created by `feynman setup` and can be edited manually. A typical configuration looks like:
+The primary configuration file is `~/.feynman/agent/settings.json`. It is created by `feynman setup` and can be edited manually. Model provider credentials live in `~/.feynman/agent/auth.json` (a file, not an `auth/` directory). A typical configuration looks like:
 
 ```json
 {
