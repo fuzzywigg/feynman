@@ -31,7 +31,11 @@ These are the primary commands you will use day-to-day. Each workflow dispatches
 | `/log` | Write a durable session log with completed work, findings, open questions, and next steps |
 | `/jobs` | Inspect active background work: running processes, scheduled follow-ups, and active watches |
 | `/help` | Show grouped Feynman commands and prefill the editor with a selected command |
+| `/commands` | Browse all available slash commands, including built-in and package commands |
+| `/capabilities` | Show installed packages, discovery entrypoints, and runtime capability counts |
+| `/tools` | Browse all callable tools with their source and parameter summary |
 | `/feynman-model` | Open the model picker for the main default model and per-subagent overrides |
+| `/service-tier` | View or set the provider service tier override for supported models |
 | `/init` | Bootstrap `AGENTS.md` and session-log folders for a new research project |
 | `/outputs` | Browse all research artifacts (papers, outputs, experiments, notes) |
 | `/search` | Search prior session transcripts for past research and findings |
