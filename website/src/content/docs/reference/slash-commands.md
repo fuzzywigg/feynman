@@ -18,6 +18,7 @@ Slash commands are available inside the Feynman REPL. They map to research workf
 | `/replicate <paper>` | Plan or execute a replication workflow for a paper, claim, or benchmark |
 | `/compare <topic>` | Compare multiple sources and produce an agreement/disagreement matrix |
 | `/draft <topic>` | Generate a paper-style draft from research findings |
+| `/summarize <source>` | Summarize a URL, local file, or PDF with the RLM windowed-read pattern |
 | `/autoresearch <idea>` | Start an autonomous experiment loop that iteratively optimizes toward a goal |
 | `/watch <topic>` | Set up recurring research monitoring on a topic |
 
@@ -52,6 +53,7 @@ feynman audit 2401.12345
 feynman replicate "claim"
 feynman compare "topic"
 feynman draft "topic"
+feynman summarize README.md
 ```
 
 This is equivalent to launching the REPL and typing the slash command. The CLI form is useful for scripting and automation.
