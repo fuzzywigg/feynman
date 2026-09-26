@@ -167,7 +167,7 @@ Four bundled research agents, dispatched automatically.
 
 - **[AlphaXiv](https://www.alphaxiv.org/)** — paper search, Q&A, code reading, annotations (via `alpha` CLI)
 - **Docker** — isolated container execution for safe experiments on your machine
-- **Web search** — Gemini or Perplexity, zero-config default
+- **Web search** — Gemini, Perplexity, or Exa (zero-config Gemini default; `auto` tries Perplexity → Exa → Gemini)
 - **Session search** — indexed recall across prior research sessions
 - **Preview** — browser and PDF export of generated artifacts
 - **Modal** — serverless GPU compute for burst training and inference
