@@ -56,6 +56,8 @@ Use `feynman packages list` to see which optional packages are available on your
 | Command | Description |
 | --- | --- |
 | `feynman search status` | Show Pi web-access status and config path |
+| `feynman search set <provider> [api-key]` | Set the web search provider (`auto`, `perplexity`, `exa`, `gemini`) and optionally save its API key |
+| `feynman search clear` | Reset web search provider to auto while preserving API keys |
 
 ## REPL hotkeys
 
