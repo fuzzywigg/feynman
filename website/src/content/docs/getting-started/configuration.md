@@ -93,12 +93,13 @@ Feynman respects the following environment variables, which take precedence over
 | `FEYNMAN_MODEL` | Override the default model |
 | `FEYNMAN_HOME` | Override the config directory (default: `~/.feynman`) |
 | `FEYNMAN_THINKING` | Override the thinking level |
+| `FEYNMAN_SERVICE_TIER` | Override request service tier (`auto`, `default`, `flex`, `priority`, `standard_only`) |
 | `ANTHROPIC_API_KEY` | Anthropic API key |
 | `OPENAI_API_KEY` | OpenAI API key |
 | `GEMINI_API_KEY` | Google Gemini API key |
 | `AWS_PROFILE` | Preferred AWS profile for Amazon Bedrock |
-| `TAVILY_API_KEY` | Tavily web search API key |
-| `SERPER_API_KEY` | Serper web search API key |
+
+Web search API keys are not read from `TAVILY_API_KEY` / `SERPER_API_KEY`. Configure Perplexity, Exa, or Gemini via `feynman search set` (stored in `~/.feynman/web-search.json`). See [Web Search](/docs/tools/web-search).
 
 ## Session storage
 
