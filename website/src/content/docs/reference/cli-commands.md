@@ -115,3 +115,5 @@ These are equivalent to `/jobs` and `/log` in the REPL. Use `feynman jobs` to in
 | `--alpha-status` | Show alphaXiv auth status and exit |
 | `--doctor` | Alias for `feynman doctor` |
 | `--setup-preview` | Alias for `feynman setup preview` |
+| `--help` | Show CLI help (same as `feynman help`) |
+| `--version` | Print the installed Feynman version and exit |
