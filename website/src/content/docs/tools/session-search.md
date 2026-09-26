@@ -9,13 +9,9 @@ The session search tool recovers prior Feynman work from stored session transcri
 
 ## Installation
 
-Session search is an optional package. Install it with:
+Session search is a **core package**, installed by default with every Feynman installation (same as memory). You do not need an optional install step.
 
-```bash
-feynman packages install session-search
-```
-
-Once installed, the `/search` slash command and automatic session recall become available in all future sessions.
+Running `feynman packages install session-search` only reports that it is already a core package; it does not add a separate preset. The `/search` slash command and automatic session recall are available immediately. See [Package Stack](/docs/reference/package-stack) for the full core list.
 
 ## Usage
 
