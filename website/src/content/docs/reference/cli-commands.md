@@ -81,6 +81,8 @@ feynman replicate "claim"
 feynman compare "topic"
 feynman draft "topic"
 feynman summarize README.md
+feynman autoresearch "idea"
+feynman watch "topic"
 ```
 
 These are equivalent to launching the REPL and typing the corresponding slash command. `feynman summarize` also accepts optional window/threshold flags documented in the summarize prompt (`--window-size`, `--overlap`, `--tier1-threshold`, `--tier2-threshold`).
