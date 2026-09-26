@@ -91,6 +91,7 @@ These are equivalent to launching the REPL and typing the corresponding slash co
 | --- | --- |
 | `--prompt "<text>"` | Run one prompt and exit (one-shot mode) |
 | `--model <provider/model|provider:model>` | Force a specific model for this session |
+| `--service-tier <tier>` | Override request service tier for this run (`auto`, `default`, `flex`, `priority`, `standard_only`) |
 | `--thinking <level>` | Set thinking level: `off`, `minimal`, `low`, `medium`, `high`, `xhigh` |
 | `--cwd <path>` | Set the working directory for all file operations |
 | `--session-dir <path>` | Set the session storage directory |
