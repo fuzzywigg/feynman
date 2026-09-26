@@ -99,7 +99,7 @@ Feynman respects the following environment variables, which take precedence over
 | `GEMINI_API_KEY` | Google Gemini API key |
 | `AWS_PROFILE` | Preferred AWS profile for Amazon Bedrock |
 
-Web search API keys are not read from `TAVILY_API_KEY` / `SERPER_API_KEY`. Configure Perplexity, Exa, or Gemini via `feynman search set` (stored in `~/.feynman/web-search.json`). See [Web Search](/tools/web-search).
+Web search API keys are not read from `TAVILY_API_KEY` / `SERPER_API_KEY`. Configure Perplexity, Exa, or Gemini via `feynman search set` (stored in `~/.feynman/web-search.json`). See [Web Search](/docs/tools/web-search).
 
 ## Session storage
 
