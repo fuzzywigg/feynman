@@ -58,6 +58,8 @@ feynman replicate "claim"
 feynman compare "topic"
 feynman draft "topic"
 feynman summarize README.md
+feynman autoresearch "idea"
+feynman watch "topic"
 ```
 
 This is equivalent to launching the REPL and typing the slash command. The CLI form is useful for scripting and automation.
