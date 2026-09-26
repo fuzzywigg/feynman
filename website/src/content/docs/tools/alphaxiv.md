@@ -47,7 +47,7 @@ alpha code https://github.com/org/repo src/model.py
 
 ## Configuration
 
-Authentication tokens are stored in `~/.feynman/auth/` and persist across sessions. No additional configuration is needed beyond logging in.
+Authentication tokens are stored in `~/.ahub/auth.json` (via `@companion-ai/alpha-hub`) and persist across sessions. No additional configuration is needed beyond logging in.
 
 ## Without AlphaXiv
 
