@@ -9,19 +9,20 @@ Feynman's web search tool retrieves current information from the web during rese
 
 ## Routing modes
 
-Feynman supports three web search backends. You can configure which one to use or let Feynman choose automatically:
+Feynman supports four web search route values (`auto`, `perplexity`, `exa`, `gemini`). You can force a provider or let Feynman choose automatically:
 
 | Mode | Description |
 | --- | --- |
-| `auto` | Prefer Perplexity when configured, fall back to Gemini |
+| `auto` | Try Perplexity, then Exa, then Gemini API, then Gemini Browser |
 | `perplexity` | Force Perplexity Sonar for all web searches |
+| `exa` | Force Exa for all web searches |
 | `gemini` | Force Gemini grounding (default, zero-config) |
 
 ## Default behavior
 
 The default path is zero-config Gemini grounding via a signed-in Chromium profile. No API keys are required. This works on macOS and Linux where a Chromium-based browser is installed and signed in to a Google account.
 
-For headless environments, CI pipelines, or servers without a browser, configure an explicit API key for either Perplexity or Gemini in `~/.feynman/web-search.json`.
+For headless environments, CI pipelines, or servers without a browser, configure an explicit API key for Perplexity, Exa, or Gemini in `~/.feynman/web-search.json`.
 
 ## Configuration
 
@@ -31,17 +32,27 @@ Check the current search configuration:
 feynman search status
 ```
 
-Edit `~/.feynman/web-search.json` to configure the backend:
+Prefer the CLI to set the route and optional API key:
+
+```bash
+feynman search set auto
+feynman search set perplexity <api-key>
+feynman search set exa <api-key>
+feynman search set gemini <api-key>
+```
+
+You can also edit `~/.feynman/web-search.json` directly:
 
 ```json
 {
   "route": "auto",
   "perplexityApiKey": "pplx-...",
+  "exaApiKey": "exa-...",
   "geminiApiKey": "AIza..."
 }
 ```
 
-Set `route` to `auto`, `perplexity`, or `gemini`. When using `auto`, Feynman prefers Perplexity if a key is present, then falls back to Gemini.
+Set `route` to `auto`, `perplexity`, `exa`, or `gemini`. When using `auto`, Feynman tries Perplexity, then Exa, then Gemini API, then Gemini Browser.
 
 ## Search features
 
