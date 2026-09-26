@@ -11,7 +11,7 @@ on:
 jobs:
   version-check:
     # Fork guard: this fork must never publish @companion-ai/feynman.
-    # package.json (0.2.40) is behind the published 0.3.11, so should_release
+    # package.json (0.2.40) is behind the published 0.5.8, so should_release
     # would evaluate true on any push to main and attempt an npm publish.
     if: github.repository == 'companion-inc/feynman'
     runs-on: ubuntu-latest
