@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > This is [fuzzywigg](https://github.com/fuzzywigg)'s security-patched fork of
 > [companion-inc/feynman](https://github.com/companion-inc/feynman). It tracks upstream
-> **v0.2.40** (the fork point; upstream has since moved on to the 0.3.x line) and layers
+> **v0.2.40** (the fork point; upstream has since moved on to the 0.5.x line) and layers
 > local dependency security fixes on top. To use this fork, clone
 > `https://github.com/fuzzywigg/feynman.git` — everything below the notice is the
 > upstream README.
