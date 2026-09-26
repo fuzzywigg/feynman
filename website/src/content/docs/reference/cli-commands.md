@@ -78,9 +78,10 @@ feynman audit 2401.12345
 feynman replicate "claim"
 feynman compare "topic"
 feynman draft "topic"
+feynman summarize README.md
 ```
 
-These are equivalent to launching the REPL and typing the corresponding slash command.
+These are equivalent to launching the REPL and typing the corresponding slash command. `feynman summarize` also accepts optional window/threshold flags documented in the summarize prompt (`--window-size`, `--overlap`, `--tier1-threshold`, `--tier2-threshold`).
 
 ## Flags
 
