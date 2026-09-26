@@ -27,8 +27,9 @@ This page covers the dedicated Feynman CLI commands and flags. Workflow commands
 | `feynman model login [id]` | Authenticate a model provider with OAuth or API-key setup |
 | `feynman model logout [id]` | Clear stored auth for a model provider |
 | `feynman model set <provider/model>` | Set the default model for all sessions |
+| `feynman model tier [value]` | View or set the request service tier override |
 
-These commands manage your model provider configuration. The `model set` command updates `~/.feynman/settings.json` with the new default. It accepts either `provider/model-name` or `provider:model-name`, for example `anthropic/claude-sonnet-4-20250514` or `anthropic:claude-sonnet-4-20250514`. Running `feynman model login google` or `feynman model login amazon-bedrock` routes directly into the relevant API-key setup flow instead of requiring the interactive picker.
+These commands manage your model provider configuration. The `model set` command updates `~/.feynman/settings.json` with the new default. It accepts either `provider/model-name` or `provider:model-name`, for example `anthropic/claude-sonnet-4-20250514` or `anthropic:claude-sonnet-4-20250514`. Running `feynman model login google` or `feynman model login amazon-bedrock` routes directly into the relevant API-key setup flow instead of requiring the interactive picker. The `model tier` command views or sets the persisted `serviceTier` override in the same settings file (`auto`, `default`, `flex`, `priority`, `standard_only`, or `unset` to clear).
 
 ## AlphaXiv commands
 
