@@ -7,6 +7,7 @@ import { join } from "node:path";
 import {
 	getConfiguredServiceTier,
 	normalizeServiceTier,
+	resolveActiveServiceTier,
 	resolveProviderServiceTier,
 	setConfiguredServiceTier,
 } from "../src/model/service-tier.js";
@@ -38,4 +39,31 @@ test("resolveProviderServiceTier filters unsupported provider+tier pairs", () =>
 	assert.equal(resolveProviderServiceTier("anthropic", "standard_only"), "standard_only");
 	assert.equal(resolveProviderServiceTier("anthropic", "priority"), undefined);
 	assert.equal(resolveProviderServiceTier("google", "priority"), undefined);
+});
+
+test("resolveActiveServiceTier prefers env over settings and ignores invalid env", () => {
+	const dir = mkdtempSync(join(tmpdir(), "feynman-service-tier-active-"));
+	const settingsPath = join(dir, "settings.json");
+	setConfiguredServiceTier(settingsPath, "flex");
+
+	const previous = process.env.FEYNMAN_SERVICE_TIER;
+	try {
+		process.env.FEYNMAN_SERVICE_TIER = "priority";
+		assert.equal(resolveActiveServiceTier(settingsPath), "priority");
+
+		process.env.FEYNMAN_SERVICE_TIER = "not-a-tier";
+		assert.equal(resolveActiveServiceTier(settingsPath), "flex");
+
+		delete process.env.FEYNMAN_SERVICE_TIER;
+		assert.equal(resolveActiveServiceTier(settingsPath), "flex");
+
+		setConfiguredServiceTier(settingsPath, undefined);
+		assert.equal(resolveActiveServiceTier(settingsPath), undefined);
+	} finally {
+		if (previous === undefined) {
+			delete process.env.FEYNMAN_SERVICE_TIER;
+		} else {
+			process.env.FEYNMAN_SERVICE_TIER = previous;
+		}
+	}
 });

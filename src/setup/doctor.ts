@@ -12,7 +12,7 @@ import { buildModelStatusSnapshotFromRecords, getAvailableModelRecords, getSuppo
 import { createModelRegistry, getModelsJsonPath } from "../model/registry.js";
 import { getConfiguredServiceTier } from "../model/service-tier.js";
 
-function findProvidersMissingApiKey(modelsJsonPath: string): string[] {
+export function findProvidersMissingApiKey(modelsJsonPath: string): string[] {
 	try {
 		const raw = readFileSync(modelsJsonPath, "utf8").trim();
 		if (!raw) return [];
