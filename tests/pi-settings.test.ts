@@ -49,6 +49,139 @@ test("normalizeFeynmanSettings seeds the fast core package set", () => {
 	assert.deepEqual(settings.packages, [...CORE_PACKAGE_SOURCES]);
 });
 
+test("normalizeFeynmanSettings forces theme and startup flags and seeds preferred defaults", () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-settings-"));
+	const settingsPath = join(root, "settings.json");
+	const bundledSettingsPath = join(root, "bundled-settings.json");
+	const authPath = join(root, "auth.json");
+	const envKeys = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY"];
+	const savedEnv = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
+	for (const key of envKeys) {
+		delete process.env[key];
+	}
+
+	try {
+		writeFileSync(bundledSettingsPath, "{}\n", "utf8");
+		writeFileSync(
+			authPath,
+			JSON.stringify(
+				{
+					openai: { type: "api_key", key: "openai-test-key" },
+					anthropic: { type: "api_key", key: "anthropic-test-key" },
+				},
+				null,
+				2,
+			) + "\n",
+			"utf8",
+		);
+		writeFileSync(
+			settingsPath,
+			JSON.stringify(
+				{
+					theme: "other",
+					quietStartup: false,
+					collapseChangelog: false,
+				},
+				null,
+				2,
+			) + "\n",
+			"utf8",
+		);
+
+		normalizeFeynmanSettings(settingsPath, bundledSettingsPath, "high", authPath);
+
+		const settings = JSON.parse(readFileSync(settingsPath, "utf8")) as {
+			theme?: string;
+			quietStartup?: boolean;
+			collapseChangelog?: boolean;
+			editorPaddingX?: number;
+			defaultThinkingLevel?: string;
+			defaultProvider?: string;
+			defaultModel?: string;
+		};
+		assert.equal(settings.theme, "feynman");
+		assert.equal(settings.quietStartup, true);
+		assert.equal(settings.collapseChangelog, true);
+		assert.equal(settings.editorPaddingX, 1);
+		assert.equal(settings.defaultThinkingLevel, "high");
+		assert.equal(settings.defaultProvider, "anthropic");
+		assert.equal(settings.defaultModel, "claude-opus-4-6");
+	} finally {
+		for (const [key, value] of Object.entries(savedEnv)) {
+			if (value === undefined) {
+				delete process.env[key];
+			} else {
+				process.env[key] = value;
+			}
+		}
+	}
+});
+
+test("normalizeFeynmanSettings preserves existing default model and falls back for OpenAI-only auth", () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-settings-"));
+	const settingsPath = join(root, "settings.json");
+	const bundledSettingsPath = join(root, "bundled-settings.json");
+	const authPath = join(root, "auth.json");
+	const envKeys = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY"];
+	const savedEnv = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
+	for (const key of envKeys) {
+		delete process.env[key];
+	}
+
+	try {
+		writeFileSync(bundledSettingsPath, "{}\n", "utf8");
+		writeFileSync(
+			authPath,
+			JSON.stringify({ openai: { type: "api_key", key: "openai-test-key" } }, null, 2) + "\n",
+			"utf8",
+		);
+		writeFileSync(
+			settingsPath,
+			JSON.stringify(
+				{
+					defaultProvider: "openai",
+					defaultModel: "gpt-5.4",
+					defaultThinkingLevel: "low",
+					editorPaddingX: 2,
+				},
+				null,
+				2,
+			) + "\n",
+			"utf8",
+		);
+
+		normalizeFeynmanSettings(settingsPath, bundledSettingsPath, "medium", authPath);
+
+		const preserved = JSON.parse(readFileSync(settingsPath, "utf8")) as {
+			defaultProvider?: string;
+			defaultModel?: string;
+			defaultThinkingLevel?: string;
+			editorPaddingX?: number;
+		};
+		assert.equal(preserved.defaultProvider, "openai");
+		assert.equal(preserved.defaultModel, "gpt-5.4");
+		assert.equal(preserved.defaultThinkingLevel, "low");
+		assert.equal(preserved.editorPaddingX, 2);
+
+		writeFileSync(settingsPath, "{}\n", "utf8");
+		normalizeFeynmanSettings(settingsPath, bundledSettingsPath, "medium", authPath);
+		const seeded = JSON.parse(readFileSync(settingsPath, "utf8")) as {
+			defaultProvider?: string;
+			defaultModel?: string;
+		};
+		assert.equal(seeded.defaultProvider, "openai");
+		assert.equal(seeded.defaultModel, "gpt-5.4");
+	} finally {
+		for (const [key, value] of Object.entries(savedEnv)) {
+			if (value === undefined) {
+				delete process.env[key];
+			} else {
+				process.env[key] = value;
+			}
+		}
+	}
+});
+
 test("normalizeFeynmanSettings prunes the legacy slow default package set", () => {
 	const root = mkdtempSync(join(tmpdir(), "feynman-settings-"));
 	const settingsPath = join(root, "settings.json");
