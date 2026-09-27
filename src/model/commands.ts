@@ -171,11 +171,11 @@ type CustomProviderSetup = {
 	authHeader: boolean;
 };
 
-function normalizeProviderId(value: string): string {
+export function normalizeProviderId(value: string): string {
 	return value.trim().toLowerCase().replace(/\s+/g, "-");
 }
 
-function normalizeModelIds(value: string): string[] {
+export function normalizeModelIds(value: string): string[] {
 	const items = value
 		.split(",")
 		.map((entry) => entry.trim())
@@ -183,11 +183,11 @@ function normalizeModelIds(value: string): string[] {
 	return Array.from(new Set(items));
 }
 
-function normalizeBaseUrl(value: string): string {
+export function normalizeBaseUrl(value: string): string {
 	return value.trim().replace(/\/+$/, "");
 }
 
-function normalizeCustomProviderBaseUrl(
+export function normalizeCustomProviderBaseUrl(
 	api: CustomProviderSetup["api"],
 	baseUrl: string,
 ): { baseUrl: string; note?: string } {
@@ -204,7 +204,7 @@ function normalizeCustomProviderBaseUrl(
 	return { baseUrl: normalized };
 }
 
-function isLocalBaseUrl(baseUrl: string): boolean {
+export function isLocalBaseUrl(baseUrl: string): boolean {
 	return /^(https?:\/\/)?(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|\/|$)/i.test(baseUrl);
 }
 

@@ -1,8 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { applyFeynmanPackageManagerEnv, buildPiArgs, buildPiEnv, resolvePiPaths, toNodeImportSpecifier } from "../src/pi/runtime.js";
+import {
+	applyFeynmanPackageManagerEnv,
+	buildPiArgs,
+	buildPiEnv,
+	resolvePiPaths,
+	toNodeImportSpecifier,
+	validatePiInstallation,
+} from "../src/pi/runtime.js";
+
+function touch(path: string): void {
+	mkdirSync(dirname(path), { recursive: true });
+	writeFileSync(path, "", "utf8");
+}
 
 test("buildPiArgs includes configured runtime paths and prompt", () => {
 	const args = buildPiArgs({
@@ -154,4 +169,62 @@ test("toNodeImportSpecifier converts absolute preload paths to file URLs", () =>
 		pathToFileURL("/repo/feynman/dist/system/promise-polyfill.js").href,
 	);
 	assert.equal(toNodeImportSpecifier("tsx"), "tsx");
+});
+
+test("validatePiInstallation reports every missing required path on an empty tree", () => {
+	const appRoot = mkdtempSync(join(tmpdir(), "feynman-pi-validate-empty-"));
+	const paths = resolvePiPaths(appRoot);
+	const missing = validatePiInstallation(appRoot);
+
+	assert.ok(missing.includes(paths.piCliPath));
+	assert.ok(missing.includes(paths.piMainPath));
+	assert.ok(missing.includes(paths.piCliWrapperPath));
+	assert.ok(missing.includes(paths.promisePolyfillPath));
+	assert.ok(missing.includes(paths.researchToolsPath));
+	assert.ok(missing.includes(paths.promptTemplatePath));
+});
+
+test("validatePiInstallation accepts built wrapper/polyfill artifacts", () => {
+	const appRoot = mkdtempSync(join(tmpdir(), "feynman-pi-validate-built-"));
+	const paths = resolvePiPaths(appRoot);
+
+	touch(paths.piCliPath);
+	touch(paths.piMainPath);
+	touch(paths.piCliWrapperPath);
+	touch(paths.promisePolyfillPath);
+	touch(paths.researchToolsPath);
+	mkdirSync(paths.promptTemplatePath, { recursive: true });
+
+	assert.deepEqual(validatePiInstallation(appRoot), []);
+});
+
+test("validatePiInstallation accepts dev wrapper/polyfill when tsx loader exists", () => {
+	const appRoot = mkdtempSync(join(tmpdir(), "feynman-pi-validate-dev-"));
+	const paths = resolvePiPaths(appRoot);
+
+	touch(paths.piCliPath);
+	touch(paths.piMainPath);
+	touch(paths.piCliWrapperSourcePath);
+	touch(paths.promisePolyfillSourcePath);
+	touch(paths.tsxLoaderPath);
+	touch(paths.researchToolsPath);
+	mkdirSync(paths.promptTemplatePath, { recursive: true });
+
+	assert.deepEqual(validatePiInstallation(appRoot), []);
+});
+
+test("validatePiInstallation still flags wrapper when only source exists without tsx", () => {
+	const appRoot = mkdtempSync(join(tmpdir(), "feynman-pi-validate-partial-"));
+	const paths = resolvePiPaths(appRoot);
+
+	touch(paths.piCliPath);
+	touch(paths.piMainPath);
+	touch(paths.piCliWrapperSourcePath);
+	touch(paths.promisePolyfillSourcePath);
+	touch(paths.researchToolsPath);
+	mkdirSync(paths.promptTemplatePath, { recursive: true });
+
+	const missing = validatePiInstallation(appRoot);
+	assert.ok(missing.includes(paths.piCliWrapperPath));
+	assert.ok(missing.includes(paths.promisePolyfillPath));
 });

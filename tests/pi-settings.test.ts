@@ -4,8 +4,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
+import { createModelRegistry } from "../src/model/registry.js";
 import {
 	CORE_PACKAGE_SOURCES,
+	filterPackageSourcesForCurrentNode,
 	getOptionalPackagePresetSources,
 	isOptionalPackagePresetSupported,
 	listOptionalPackagePresetInstallTargets,
@@ -16,7 +18,7 @@ import {
 	shouldPruneLegacyDefaultPackages,
 	supportsNativePackageSources,
 } from "../src/pi/package-presets.js";
-import { normalizeFeynmanSettings, normalizeThinkingLevel } from "../src/pi/settings.js";
+import { normalizeFeynmanSettings, normalizeThinkingLevel, parseModelSpec, readJson } from "../src/pi/settings.js";
 
 test("normalizeThinkingLevel accepts the latest Pi thinking levels", () => {
 	assert.equal(normalizeThinkingLevel("off"), "off");
@@ -99,11 +101,72 @@ test("package update sources map core and optional aliases", () => {
 	assert.deepEqual(resolvePackageUpdateSources("all-extras", "darwin"), ["npm:pi-generative-ui"]);
 	assert.deepEqual(resolvePackageUpdateSources("npm:@samfp/pi-memory"), ["npm:@samfp/pi-memory"]);
 	assert.deepEqual(resolvePackageUpdateSources("custom-package"), ["custom-package"]);
+	assert.deepEqual(resolvePackageUpdateSources(""), []);
+	assert.deepEqual(resolvePackageUpdateSources("   "), []);
+	assert.deepEqual(resolvePackageUpdateSources("github:org/repo"), ["github:org/repo"]);
+	assert.deepEqual(resolvePackageUpdateSources("file:./local-pkg"), ["file:./local-pkg"]);
 });
 
 test("supportsNativePackageSources disables sqlite-backed packages on Node 25+", () => {
 	assert.equal(supportsNativePackageSources("24.8.0"), true);
 	assert.equal(supportsNativePackageSources("25.0.0"), false);
+	// Unparseable majors become 0, which is treated as supported (<= 24).
+	assert.equal(supportsNativePackageSources("not-a-version"), true);
+});
+
+test("filterPackageSourcesForCurrentNode drops native packages only on Node 25+", () => {
+	const mixed = [...CORE_PACKAGE_SOURCES, "npm:extra-tool"];
+	assert.deepEqual(filterPackageSourcesForCurrentNode(mixed, "24.9.0"), mixed);
+	const filtered = filterPackageSourcesForCurrentNode(mixed, "25.1.0");
+	for (const source of NATIVE_PACKAGE_SOURCES) {
+		assert.equal(filtered.includes(source), false);
+	}
+	assert.ok(filtered.includes("npm:extra-tool"));
+});
+
+test("shouldPruneLegacyDefaultPackages matches exact legacy set order-insensitively", () => {
+	assert.equal(shouldPruneLegacyDefaultPackages(undefined), false);
+	assert.equal(shouldPruneLegacyDefaultPackages("not-an-array" as never), false);
+	assert.equal(shouldPruneLegacyDefaultPackages([{ source: "npm:x" } as never]), false);
+	assert.equal(shouldPruneLegacyDefaultPackages([...CORE_PACKAGE_SOURCES]), false);
+	assert.equal(
+		shouldPruneLegacyDefaultPackages(["npm:pi-generative-ui", ...CORE_PACKAGE_SOURCES]),
+		true,
+	);
+});
+
+test("listOptionalPackagePresetInstallTargets includes all-extras on darwin", () => {
+	assert.deepEqual(listOptionalPackagePresetInstallTargets("darwin"), ["generative-ui", "all-extras"]);
+});
+
+test("parseModelSpec accepts provider:model and provider/model and rejects malformed specs", () => {
+	const authPath = join(mkdtempSync(join(tmpdir(), "feynman-parse-model-")), "auth.json");
+	writeFileSync(authPath, "{}\n", "utf8");
+	const registry = createModelRegistry(authPath);
+
+	const colon = parseModelSpec("anthropic:claude-opus-4-6", registry);
+	const slash = parseModelSpec("anthropic/claude-opus-4-6", registry);
+	assert.ok(colon);
+	assert.equal(colon!.provider, "anthropic");
+	assert.equal(colon!.id, "claude-opus-4-6");
+	assert.equal(slash?.id, "claude-opus-4-6");
+
+	assert.equal(parseModelSpec("bare-model", registry), undefined);
+	assert.equal(parseModelSpec(":missing-provider", registry), undefined);
+	assert.equal(parseModelSpec("provider/", registry), undefined);
+	assert.equal(parseModelSpec("   ", registry), undefined);
+});
+
+test("readJson returns empty object for missing or invalid files", () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-read-json-"));
+	const valid = join(root, "valid.json");
+	const invalid = join(root, "invalid.json");
+	writeFileSync(valid, JSON.stringify({ a: 1 }), "utf8");
+	writeFileSync(invalid, "{bad", "utf8");
+
+	assert.deepEqual(readJson(valid), { a: 1 });
+	assert.deepEqual(readJson(invalid), {});
+	assert.deepEqual(readJson(join(root, "missing.json")), {});
 });
 
 test("normalizeFeynmanSettings prunes native core packages on unsupported Node majors", () => {

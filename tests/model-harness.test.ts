@@ -27,6 +27,36 @@ test("chooseRecommendedModel prefers the strongest authenticated research model"
 	assert.equal(recommendation?.spec, "anthropic/claude-opus-4-6");
 });
 
+test("chooseRecommendedModel returns undefined when nothing is authenticated", () => {
+	const envKeys = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY"];
+	const savedEnv = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
+	for (const key of envKeys) {
+		delete process.env[key];
+	}
+	try {
+		assert.equal(chooseRecommendedModel(createAuthPath({})), undefined);
+	} finally {
+		for (const [key, value] of Object.entries(savedEnv)) {
+			if (value === undefined) {
+				delete process.env[key];
+			} else {
+				process.env[key] = value;
+			}
+		}
+	}
+});
+
+test("buildModelStatusSnapshotFromRecords uses fallback recommendation reason for non-preference models", () => {
+	const snapshot = buildModelStatusSnapshotFromRecords(
+		[{ provider: "custom-lab", id: "research-bot-1" }],
+		[{ provider: "custom-lab", id: "research-bot-1" }],
+		undefined,
+	);
+
+	assert.equal(snapshot.recommended, "custom-lab/research-bot-1");
+	assert.equal(snapshot.recommendationReason, "best currently authenticated fallback for research work");
+});
+
 test("getAvailableModelRecords excludes expired OAuth credentials without an env fallback", () => {
 	const authPath = createAuthPath({
 		anthropic: {

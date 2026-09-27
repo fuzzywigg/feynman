@@ -7,3 +7,7 @@ test("exitCodeFromSignal maps POSIX signals to conventional shell exit codes", (
 	assert.equal(exitCodeFromSignal("SIGTERM"), 143);
 	assert.equal(exitCodeFromSignal("SIGSEGV"), 139);
 });
+
+test("exitCodeFromSignal returns 1 for unknown or unsupported signal names", () => {
+	assert.equal(exitCodeFromSignal("NOT_A_REAL_SIGNAL" as NodeJS.Signals), 1);
+});
