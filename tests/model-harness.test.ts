@@ -11,8 +11,27 @@ import {
 	getAvailableModelRecords,
 	getSupportedModelRecords,
 } from "../src/model/catalog.js";
-import { resolveModelProviderForCommand, setDefaultModelSpec } from "../src/model/commands.js";
+import { printModelList, resolveModelProviderForCommand, setDefaultModelSpec } from "../src/model/commands.js";
 import { createModelRegistry } from "../src/model/registry.js";
+
+function captureConsoleLog(fn: () => void): string[] {
+	const lines: string[] = [];
+	const original = console.log;
+	console.log = (...args: unknown[]) => {
+		lines.push(args.map((arg) => String(arg)).join(" "));
+	};
+	try {
+		fn();
+	} finally {
+		console.log = original;
+	}
+	return lines;
+}
+
+function stripAnsi(line: string): string {
+	// biome-ignore lint/suspicious/noControlCharactersInRegex: ANSI strip
+	return line.replace(/\x1b\[[0-9;]*m/g, "");
+}
 
 function createAuthPath(contents: Record<string, unknown>): string {
 	const root = mkdtempSync(join(tmpdir(), "feynman-auth-"));
@@ -241,6 +260,60 @@ test("setDefaultModelSpec prefers the explicitly configured provider when a bare
 	};
 	assert.equal(settings.defaultProvider, "openai");
 	assert.equal(settings.defaultModel, "gpt-5.4");
+});
+
+test("setDefaultModelSpec rejects unavailable model ids", () => {
+	const authPath = createAuthPath({
+		openai: { type: "api_key", key: "openai-test-key" },
+	});
+	const settingsPath = join(mkdtempSync(join(tmpdir(), "feynman-settings-")), "settings.json");
+
+	assert.throws(
+		() => setDefaultModelSpec(settingsPath, authPath, "no-such-model-xyz"),
+		/Model not available in Pi auth storage/,
+	);
+});
+
+test("printModelList warns when no authenticated models are available", () => {
+	const envKeys = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY"];
+	const savedEnv = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
+	for (const key of envKeys) {
+		delete process.env[key];
+	}
+
+	try {
+		const authPath = createAuthPath({});
+		const settingsPath = join(mkdtempSync(join(tmpdir(), "feynman-settings-")), "settings.json");
+		const output = captureConsoleLog(() => printModelList(settingsPath, authPath)).map(stripAnsi);
+		assert.ok(output.some((line) => line.includes("No authenticated Pi models are currently available.")));
+		assert.ok(output.some((line) => /feynman model|authenticate|login/i.test(line)));
+	} finally {
+		for (const [key, value] of Object.entries(savedEnv)) {
+			if (value === undefined) {
+				delete process.env[key];
+			} else {
+				process.env[key] = value;
+			}
+		}
+	}
+});
+
+test("printModelList groups models by provider and marks current/recommended", () => {
+	const authPath = createAuthPath({
+		openai: { type: "api_key", key: "openai-test-key" },
+		anthropic: { type: "api_key", key: "anthropic-test-key" },
+	});
+	const settingsPath = join(mkdtempSync(join(tmpdir(), "feynman-settings-")), "settings.json");
+	writeFileSync(
+		settingsPath,
+		JSON.stringify({ defaultProvider: "openai", defaultModel: "gpt-5.4" }, null, 2) + "\n",
+		"utf8",
+	);
+
+	const output = captureConsoleLog(() => printModelList(settingsPath, authPath)).map(stripAnsi);
+	assert.ok(output.some((line) => line.includes("◆ openai") || line.includes("◆ anthropic")));
+	assert.ok(output.some((line) => line.includes("openai/gpt-5.4") && line.includes("current")));
+	assert.ok(output.some((line) => line.includes("anthropic/claude-opus-4-6") && line.includes("recommended")));
 });
 
 test("buildModelStatusSnapshotFromRecords flags an invalid current model and suggests a replacement", () => {

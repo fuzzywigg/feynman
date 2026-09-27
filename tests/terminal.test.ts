@@ -1,7 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { printError, printInfo, printPanel, printSection, printSuccess, printWarning } from "../src/ui/terminal.js";
+import {
+	printAsciiHeader,
+	printError,
+	printInfo,
+	printPanel,
+	printSection,
+	printSuccess,
+	printWarning,
+} from "../src/ui/terminal.js";
 
 function captureConsoleLog(fn: () => void): string[] {
 	const lines: string[] = [];
@@ -56,4 +64,10 @@ test("print helpers emit recognizable markers", () => {
 	assert.ok(output.some((line) => line.includes("⚠ warn")));
 	assert.ok(output.some((line) => line.includes("✗ err")));
 	assert.ok(output.some((line) => line.includes("◆ section")));
+});
+
+test("printAsciiHeader renders the logo and optional subtitle lines", () => {
+	const output = captureConsoleLog(() => printAsciiHeader(["research shell"])).map(stripAnsi);
+	assert.ok(output.some((line) => /feynman/i.test(line) || line.trim().length > 0));
+	assert.ok(output.some((line) => line.includes("research shell")));
 });

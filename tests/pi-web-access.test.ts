@@ -167,3 +167,43 @@ test("formatPiWebAccessDoctorLines omits marker and hint when config exists", ()
 	assert.ok(!configLine!.includes("(not created yet)"), `did not expect '(not created yet)' marker: ${configLine}`);
 	assert.ok(!lines.some((line) => line.includes("hint:")), "did not expect a hint line when config exists");
 });
+
+test("loadPiWebAccessConfig returns empty object for invalid JSON", () => {
+	const root = mkdtempSync(join(tmpdir(), "feynman-pi-web-"));
+	const configPath = getPiWebSearchConfigPath(root);
+	mkdirSync(join(root, ".feynman"), { recursive: true });
+	writeFileSync(configPath, "{not-json\n", "utf8");
+
+	assert.deepEqual(loadPiWebAccessConfig(configPath), {});
+});
+
+test("getPiWebAccessStatus preserves summary-review workflow and ignores blank API keys", () => {
+	const status = getPiWebAccessStatus({
+		provider: "auto",
+		searchProvider: "auto",
+		workflow: "summary-review",
+		perplexityApiKey: "   ",
+		exaApiKey: "",
+		geminiApiKey: "  ",
+	});
+
+	assert.equal(status.workflow, "summary-review");
+	assert.equal(status.perplexityConfigured, false);
+	assert.equal(status.exaConfigured, false);
+	assert.equal(status.geminiApiConfigured, false);
+	assert.match(status.note, /try Perplexity, then Exa/i);
+});
+
+test("getPiWebAccessStatus keeps divergent searchProvider and request provider", () => {
+	const status = getPiWebAccessStatus({
+		searchProvider: "exa",
+		provider: "gemini",
+		exaApiKey: "exa_...",
+		geminiApiKey: "AIza...",
+	});
+
+	assert.equal(status.searchProvider, "exa");
+	assert.equal(status.requestProvider, "gemini");
+	assert.equal(status.routeLabel, "Exa");
+	assert.match(status.note, /Exa/);
+});

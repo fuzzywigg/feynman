@@ -4,7 +4,12 @@ import { appendFileSync, existsSync, lstatSync, mkdtempSync, mkdirSync, readFile
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { installPackageSources, seedBundledWorkspacePackages, updateConfiguredPackages } from "../src/pi/package-ops.js";
+import {
+	getMissingConfiguredPackages,
+	installPackageSources,
+	seedBundledWorkspacePackages,
+	updateConfiguredPackages,
+} from "../src/pi/package-ops.js";
 
 function createBundledWorkspace(
 	appRoot: string,
@@ -42,6 +47,69 @@ function writeFakeNpmScript(root: string, body: string): string {
 	writeFileSync(scriptPath, body, "utf8");
 	return scriptPath;
 }
+
+test("getMissingConfiguredPackages reports missing user packages and ignores installed globals", () => {
+	const appRoot = mkdtempSync(join(tmpdir(), "feynman-app-"));
+	const homeRoot = mkdtempSync(join(tmpdir(), "feynman-home-"));
+	const workingDir = mkdtempSync(join(tmpdir(), "feynman-wd-"));
+	const agentDir = resolve(homeRoot, "agent");
+
+	writeSettings(agentDir, {
+		packages: ["npm:missing-pkg", "npm:installed-pkg"],
+	});
+	createInstalledGlobalPackage(homeRoot, "installed-pkg");
+
+	const summary = getMissingConfiguredPackages(workingDir, agentDir, appRoot);
+
+	assert.deepEqual(
+		summary.missing.map((entry) => entry.source),
+		["npm:missing-pkg"],
+	);
+	assert.deepEqual(summary.bundled, []);
+});
+
+test("getMissingConfiguredPackages classifies local paths under the bundled workspace root", () => {
+	const appRoot = mkdtempSync(join(tmpdir(), "feynman-app-"));
+	const homeRoot = mkdtempSync(join(tmpdir(), "feynman-home-"));
+	const workingDir = mkdtempSync(join(tmpdir(), "feynman-wd-"));
+	const agentDir = resolve(homeRoot, "agent");
+	const bundledPackagePath = resolve(appRoot, ".feynman", "npm", "node_modules", "local-bundled");
+
+	mkdirSync(bundledPackagePath, { recursive: true });
+	writeFileSync(
+		join(bundledPackagePath, "package.json"),
+		JSON.stringify({ name: "local-bundled", version: "1.0.0" }, null, 2) + "\n",
+		"utf8",
+	);
+	writeSettings(agentDir, {
+		packages: [bundledPackagePath, "npm:still-missing"],
+	});
+
+	const summary = getMissingConfiguredPackages(workingDir, agentDir, appRoot);
+
+	assert.deepEqual(
+		summary.bundled.map((entry) => entry.source),
+		[bundledPackagePath],
+	);
+	assert.equal(summary.bundled[0]?.installedPath, bundledPackagePath);
+	assert.deepEqual(
+		summary.missing.map((entry) => entry.source),
+		["npm:still-missing"],
+	);
+});
+
+test("getMissingConfiguredPackages returns empty summaries when nothing is configured", () => {
+	const appRoot = mkdtempSync(join(tmpdir(), "feynman-app-"));
+	const homeRoot = mkdtempSync(join(tmpdir(), "feynman-home-"));
+	const workingDir = mkdtempSync(join(tmpdir(), "feynman-wd-"));
+	const agentDir = resolve(homeRoot, "agent");
+	writeSettings(agentDir, {});
+
+	assert.deepEqual(getMissingConfiguredPackages(workingDir, agentDir, appRoot), {
+		missing: [],
+		bundled: [],
+	});
+});
 
 test("seedBundledWorkspacePackages links bundled packages into the Feynman npm prefix", () => {
 	const appRoot = mkdtempSync(join(tmpdir(), "feynman-bundle-"));
