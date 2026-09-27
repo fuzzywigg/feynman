@@ -100,29 +100,44 @@ function printHelp(appRoot: string): void {
 	printInfo("Inside the REPL, slash workflows come from the live prompt-template and extension command set.");
 }
 
-async function handleAlphaCommand(action: string | undefined): Promise<void> {
+export type AlphaCommandDependencies = {
+	login?: typeof loginAlpha;
+	logout?: typeof logoutAlpha;
+	isLoggedIn?: typeof isAlphaLoggedIn;
+	getUserName?: typeof getAlphaUserName;
+};
+
+export async function handleAlphaCommand(
+	action: string | undefined,
+	deps: AlphaCommandDependencies = {},
+): Promise<void> {
+	const login = deps.login ?? loginAlpha;
+	const logout = deps.logout ?? logoutAlpha;
+	const isLoggedIn = deps.isLoggedIn ?? isAlphaLoggedIn;
+	const getUserName = deps.getUserName ?? getAlphaUserName;
+
 	if (action === "login") {
-		const result = await loginAlpha();
+		const result = await login();
 		const name =
 			result.userInfo &&
 			typeof result.userInfo === "object" &&
 			"name" in result.userInfo &&
 			typeof result.userInfo.name === "string"
 				? result.userInfo.name
-				: getAlphaUserName();
+				: getUserName();
 		console.log(name ? `alphaXiv login complete: ${name}` : "alphaXiv login complete");
 		return;
 	}
 
 	if (action === "logout") {
-		logoutAlpha();
+		logout();
 		console.log("alphaXiv auth cleared");
 		return;
 	}
 
 	if (!action || action === "status") {
-		if (isAlphaLoggedIn()) {
-			const name = getAlphaUserName();
+		if (isLoggedIn()) {
+			const name = getUserName();
 			console.log(name ? `alphaXiv logged in as ${name}` : "alphaXiv logged in");
 		} else {
 			console.log("alphaXiv not logged in");
@@ -133,7 +148,7 @@ async function handleAlphaCommand(action: string | undefined): Promise<void> {
 	throw new Error(`Unknown alpha command: ${action}`);
 }
 
-async function handleModelCommand(subcommand: string | undefined, args: string[], feynmanSettingsPath: string, feynmanAuthPath: string): Promise<void> {
+export async function handleModelCommand(subcommand: string | undefined, args: string[], feynmanSettingsPath: string, feynmanAuthPath: string): Promise<void> {
 	if (!subcommand || subcommand === "list") {
 		printModelList(feynmanSettingsPath, feynmanAuthPath);
 		return;
@@ -190,12 +205,25 @@ async function handleModelCommand(subcommand: string | undefined, args: string[]
 	throw new Error(`Unknown model command: ${subcommand}`);
 }
 
-async function handleUpdateCommand(workingDir: string, feynmanAgentDir: string, source?: string): Promise<void> {
+export type UpdateCommandDependencies = {
+	updateConfiguredPackages?: typeof updateConfiguredPackages;
+	resolvePackageUpdateSources?: typeof resolvePackageUpdateSources;
+};
+
+export async function handleUpdateCommand(
+	workingDir: string,
+	feynmanAgentDir: string,
+	source?: string,
+	deps: UpdateCommandDependencies = {},
+): Promise<void> {
+	const updatePackages = deps.updateConfiguredPackages ?? updateConfiguredPackages;
+	const resolveSources = deps.resolvePackageUpdateSources ?? resolvePackageUpdateSources;
+
 	try {
-		const updateSources = source ? resolvePackageUpdateSources(source) : [undefined];
+		const updateSources = source ? resolveSources(source) : [undefined];
 		const results = [];
 		for (const updateSource of updateSources) {
-			results.push(await updateConfiguredPackages(workingDir, feynmanAgentDir, updateSource));
+			results.push(await updatePackages(workingDir, feynmanAgentDir, updateSource));
 		}
 
 		const updated = results.flatMap((result) => result.updated);
@@ -230,9 +258,31 @@ async function handleUpdateCommand(workingDir: string, feynmanAgentDir: string, 
 	}
 }
 
-async function handlePackagesCommand(subcommand: string | undefined, args: string[], workingDir: string, feynmanAgentDir: string): Promise<void> {
+type PackagesSettingsManager = {
+	getPackages: () => Array<string | { source?: string }>;
+	flush: () => Promise<void>;
+};
+
+export type PackagesCommandDependencies = {
+	createSettingsManager?: (workingDir: string, agentDir: string) => PackagesSettingsManager;
+	installPackageSources?: typeof installPackageSources;
+	platform?: NodeJS.Platform;
+	isStandaloneBundle?: boolean;
+};
+
+export async function handlePackagesCommand(
+	subcommand: string | undefined,
+	args: string[],
+	workingDir: string,
+	feynmanAgentDir: string,
+	deps: PackagesCommandDependencies = {},
+): Promise<void> {
+	const platform = deps.platform ?? process.platform;
+	const createSettingsManager = deps.createSettingsManager ?? ((cwd, agentDir) => SettingsManager.create(cwd, agentDir));
+	const installSources = deps.installPackageSources ?? installPackageSources;
+
 	applyFeynmanPackageManagerEnv(feynmanAgentDir);
-	const settingsManager = SettingsManager.create(workingDir, feynmanAgentDir);
+	const settingsManager = createSettingsManager(workingDir, feynmanAgentDir);
 	const configuredSources = new Set(
 		settingsManager
 			.getPackages()
@@ -249,9 +299,9 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 			printInfo(source);
 		}
 		printSection("Optional");
-		const optionalPresets = listOptionalPackagePresets();
+		const optionalPresets = listOptionalPackagePresets(platform);
 		if (optionalPresets.length === 0) {
-			printInfo(`No optional package presets are available on ${process.platform}.`);
+			printInfo(`No optional package presets are available on ${platform}.`);
 			printInfo("Core packages already include memory and session search.");
 			return;
 		}
@@ -259,7 +309,7 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 			const installed = preset.sources.every((source) => configuredSources.has(source));
 			printInfo(`${preset.name}${installed ? " (installed)" : ""}  ${preset.description}`);
 		}
-		printInfo(`Install with: feynman packages install <${listOptionalPackagePresetInstallTargets().join("|")}>`);
+		printInfo(`Install with: feynman packages install <${listOptionalPackagePresetInstallTargets(platform).join("|")}>`);
 		return;
 	}
 
@@ -269,23 +319,23 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 
 	const target = args[0];
 	if (!target) {
-		const installTargets = listOptionalPackagePresetInstallTargets();
+		const installTargets = listOptionalPackagePresetInstallTargets(platform);
 		if (installTargets.length === 0) {
-			throw new Error(`No optional package presets are available on ${process.platform}. Core packages already include memory and session search.`);
+			throw new Error(`No optional package presets are available on ${platform}. Core packages already include memory and session search.`);
 		}
 		throw new Error(`Usage: feynman packages install <${installTargets.join("|")}>`);
 	}
 
-	const sources = getOptionalPackagePresetSources(target);
+	const sources = getOptionalPackagePresetSources(target, platform);
 	if (!sources) {
 		const normalizedPreset = normalizeOptionalPackagePresetName(target);
 		if (normalizedPreset === "all-extras") {
-			console.log(`No optional package presets are available on ${process.platform}.`);
+			console.log(`No optional package presets are available on ${platform}.`);
 			console.log("Core packages already include memory and session search.");
 			return;
 		}
-		if (normalizedPreset && !isOptionalPackagePresetSupported(normalizedPreset)) {
-			console.log(`${normalizedPreset} is not available on ${process.platform}.`);
+		if (normalizedPreset && !isOptionalPackagePresetSupported(normalizedPreset, platform)) {
+			console.log(`${normalizedPreset} is not available on ${platform}.`);
 			if (normalizedPreset === "generative-ui") {
 				console.log("The upstream pi-generative-ui package currently supports macOS only.");
 			}
@@ -299,8 +349,10 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 	}
 
 	const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-	const isStandaloneBundle = !existsSync(resolve(appRoot, ".feynman", "runtime-workspace.tgz")) && existsSync(resolve(appRoot, ".feynman", "npm"));
-	if (target === "generative-ui" && process.platform === "darwin" && isStandaloneBundle) {
+	const isStandaloneBundle =
+		deps.isStandaloneBundle ??
+		(!existsSync(resolve(appRoot, ".feynman", "runtime-workspace.tgz")) && existsSync(resolve(appRoot, ".feynman", "npm")));
+	if (target === "generative-ui" && platform === "darwin" && isStandaloneBundle) {
 		console.log("The generative-ui preset is currently unavailable in the standalone macOS bundle.");
 		console.log("Its native glimpseui dependency fails to compile reliably in that environment.");
 		console.log("If you need generative-ui, install Feynman through npm instead of the standalone bundle.");
@@ -320,7 +372,7 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 	}
 
 	try {
-		const result = await installPackageSources(workingDir, feynmanAgentDir, pendingSources, { persist: true });
+		const result = await installSources(workingDir, feynmanAgentDir, pendingSources, { persist: true });
 		for (const skippedSource of result.skipped) {
 			console.log(`Skipped ${skippedSource} on Node ${process.versions.node} (native packages are only supported through Node ${MAX_NATIVE_PACKAGE_NODE_MAJOR}.x).`);
 		}
@@ -343,7 +395,7 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 	}
 }
 
-function handleSearchCommand(subcommand: string | undefined, args: string[]): void {
+export function handleSearchCommand(subcommand: string | undefined, args: string[]): void {
 	if (!subcommand || subcommand === "status") {
 		printSearchStatus();
 		return;
@@ -367,7 +419,7 @@ function handleSearchCommand(subcommand: string | undefined, args: string[]): vo
 	throw new Error(`Unknown search command: ${subcommand}`);
 }
 
-function loadPackageVersion(appRoot: string): { version?: string } {
+export function loadPackageVersion(appRoot: string): { version?: string } {
 	try {
 		return JSON.parse(readFileSync(resolve(appRoot, "package.json"), "utf8")) as { version?: string };
 	} catch {
