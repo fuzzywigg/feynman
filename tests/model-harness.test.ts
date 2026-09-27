@@ -5,7 +5,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { appendWorkflowFlagPositionals, resolveInitialPrompt, resolvePiPromptOptions, resolveThinkingConfig, shouldRunInteractiveSetup } from "../src/cli.js";
-import { buildModelStatusSnapshotFromRecords, chooseRecommendedModel, getAvailableModelRecords } from "../src/model/catalog.js";
+import {
+	buildModelStatusSnapshotFromRecords,
+	chooseRecommendedModel,
+	getAvailableModelRecords,
+	getSupportedModelRecords,
+} from "../src/model/catalog.js";
 import { resolveModelProviderForCommand, setDefaultModelSpec } from "../src/model/commands.js";
 import { createModelRegistry } from "../src/model/registry.js";
 
@@ -85,6 +90,62 @@ test("getAvailableModelRecords keeps unexpired OAuth credentials available", () 
 	const available = getAvailableModelRecords(authPath);
 
 	assert.equal(available.some((model) => model.provider === "anthropic"), true);
+});
+
+test("getAvailableModelRecords keeps expired OAuth providers when an env API key is present", () => {
+	const authPath = createAuthPath({
+		anthropic: {
+			type: "oauth",
+			access: "expired-access-token",
+			refresh: "expired-refresh-token",
+			expires: Date.now() - 1000,
+		},
+	});
+	const previous = process.env.ANTHROPIC_API_KEY;
+	process.env.ANTHROPIC_API_KEY = "env-anthropic-key";
+	try {
+		const available = getAvailableModelRecords(authPath);
+		assert.equal(available.some((model) => model.provider === "anthropic"), true);
+	} finally {
+		if (previous === undefined) {
+			delete process.env.ANTHROPIC_API_KEY;
+		} else {
+			process.env.ANTHROPIC_API_KEY = previous;
+		}
+	}
+});
+
+test("getSupportedModelRecords returns registry models independent of auth availability", () => {
+	const authPath = createAuthPath({});
+	const supported = getSupportedModelRecords(authPath);
+	assert.ok(supported.length > 0);
+	assert.ok(supported.some((model) => model.provider === "anthropic"));
+});
+
+test("chooseRecommendedModel uses the fallback reason when no preference entry matches", () => {
+	const envKeys = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY"];
+	const savedEnv = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
+	for (const key of envKeys) {
+		delete process.env[key];
+	}
+
+	try {
+		const authPath = createAuthPath({
+			groq: { type: "api_key", key: "groq-test-key" },
+		});
+		const recommendation = chooseRecommendedModel(authPath);
+		assert.ok(recommendation);
+		assert.match(recommendation!.spec, /^groq\//);
+		assert.equal(recommendation!.reason, "best currently authenticated fallback for research work");
+	} finally {
+		for (const [key, value] of Object.entries(savedEnv)) {
+			if (value === undefined) {
+				delete process.env[key];
+			} else {
+				process.env[key] = value;
+			}
+		}
+	}
 });
 
 test("createModelRegistry overlays new Anthropic Opus model before upstream Pi updates", () => {

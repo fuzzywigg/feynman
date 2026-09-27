@@ -86,9 +86,20 @@ test("optional package presets map friendly aliases", () => {
 	assert.deepEqual(getOptionalPackagePresetSources("all-extras", "linux"), undefined);
 	assert.deepEqual(getOptionalPackagePresetSources("search"), undefined);
 	assert.equal(normalizeOptionalPackagePresetName("ui"), "generative-ui");
+	assert.equal(normalizeOptionalPackagePresetName("  All-Extras  "), "all-extras");
+	assert.equal(normalizeOptionalPackagePresetName("generative-ui"), "generative-ui");
+	assert.equal(normalizeOptionalPackagePresetName("unknown-preset"), undefined);
 	assert.equal(isOptionalPackagePresetSupported("generative-ui", "darwin"), true);
 	assert.equal(isOptionalPackagePresetSupported("generative-ui", "linux"), false);
+	assert.equal(isOptionalPackagePresetSupported("generative-ui", "win32"), false);
 	assert.deepEqual(listOptionalPackagePresets("linux"), []);
+	assert.deepEqual(listOptionalPackagePresets("darwin"), [
+		{
+			name: "generative-ui",
+			description: "Interactive Glimpse UI widgets.",
+			sources: ["npm:pi-generative-ui"],
+		},
+	]);
 	assert.deepEqual(listOptionalPackagePresetInstallTargets("linux"), []);
 	assert.equal(shouldPruneLegacyDefaultPackages(["npm:custom"]), false);
 });
@@ -97,8 +108,10 @@ test("package update sources map core and optional aliases", () => {
 	assert.deepEqual(resolvePackageUpdateSources("memory"), ["npm:@samfp/pi-memory"]);
 	assert.deepEqual(resolvePackageUpdateSources("pi-memory"), ["npm:@samfp/pi-memory"]);
 	assert.deepEqual(resolvePackageUpdateSources("session-search"), ["npm:@kaiserlich-dev/pi-session-search"]);
+	assert.deepEqual(resolvePackageUpdateSources("pi-session-search"), ["npm:@kaiserlich-dev/pi-session-search"]);
 	assert.deepEqual(resolvePackageUpdateSources("generative-ui", "darwin"), ["npm:pi-generative-ui"]);
 	assert.deepEqual(resolvePackageUpdateSources("all-extras", "darwin"), ["npm:pi-generative-ui"]);
+	assert.deepEqual(resolvePackageUpdateSources("ui", "darwin"), ["npm:pi-generative-ui"]);
 	assert.deepEqual(resolvePackageUpdateSources("npm:@samfp/pi-memory"), ["npm:@samfp/pi-memory"]);
 	assert.deepEqual(resolvePackageUpdateSources("custom-package"), ["custom-package"]);
 	assert.deepEqual(resolvePackageUpdateSources(""), []);
@@ -109,6 +122,7 @@ test("package update sources map core and optional aliases", () => {
 
 test("supportsNativePackageSources disables sqlite-backed packages on Node 25+", () => {
 	assert.equal(supportsNativePackageSources("24.8.0"), true);
+	assert.equal(supportsNativePackageSources("v24.8.0"), true);
 	assert.equal(supportsNativePackageSources("25.0.0"), false);
 	// Unparseable majors become 0, which is treated as supported (<= 24).
 	assert.equal(supportsNativePackageSources("not-a-version"), true);

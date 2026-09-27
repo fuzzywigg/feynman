@@ -30,7 +30,7 @@ type SetupOptions = {
 	defaultThinkingLevel?: ThinkingLevel;
 };
 
-function printNonInteractiveSetupGuidance(): void {
+export function printNonInteractiveSetupGuidance(): void {
 	printInfo("Non-interactive terminal. Use explicit commands:");
 	printInfo("  feynman model login <provider>");
 	printInfo("  feynman model set <provider/model>");
@@ -39,7 +39,7 @@ function printNonInteractiveSetupGuidance(): void {
 	printInfo("  feynman doctor");
 }
 
-function summarizePackageSources(sources: string[]): string {
+export function summarizePackageSources(sources: string[]): string {
 	if (sources.length <= 3) {
 		return sources.join(", ");
 	}
