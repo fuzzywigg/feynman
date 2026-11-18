@@ -10,12 +10,13 @@ import {
 } from "../src/system/node-version.js";
 
 test("isSupportedNodeVersion enforces the exact minimum floor", () => {
-	assert.equal(isSupportedNodeVersion("20.19.0"), true);
-	assert.equal(isSupportedNodeVersion("20.19.0"), true);
-	assert.equal(isSupportedNodeVersion("21.0.0"), true);
+	assert.equal(isSupportedNodeVersion("22.22.0"), true);
+	assert.equal(isSupportedNodeVersion("22.21.9"), false);
+	assert.equal(isSupportedNodeVersion("20.19.0"), false);
+	assert.equal(isSupportedNodeVersion("21.0.0"), false);
+	assert.equal(isSupportedNodeVersion("23.1.0"), true);
 	assert.equal(isSupportedNodeVersion(`${MAX_NODE_MAJOR}.9.9`), true);
 	assert.equal(isSupportedNodeVersion(`${MAX_NODE_MAJOR + 1}.0.0`), false);
-	assert.equal(isSupportedNodeVersion("20.18.1"), false);
 	assert.equal(isSupportedNodeVersion("18.17.0"), false);
 });
 

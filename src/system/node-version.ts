@@ -1,4 +1,4 @@
-export const MIN_NODE_VERSION = "20.19.0";
+export const MIN_NODE_VERSION = "22.22.0";
 export const MAX_NODE_MAJOR = 24;
 export const PREFERRED_NODE_MAJOR = 22;
 
