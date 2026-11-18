@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "private": true,
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "astro dev",
@@ -16,7 +16,7 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/react": "^4.4.2",
+    "@astrojs/react": "^7.1.9",
     "@fontsource-variable/ibm-plex-sans": "^5.2.8",
     "@tailwindcss/vite": "^4.2.1",
     "@types/react": "^19.2.14",
@@ -44,7 +44,6 @@
     },
     "defu": "6.1.7",
     "js-yaml": "4.3.2",
-    "vite": "6.4.3",
     "brace-expansion": "1.1.18",
     "nanoid": "3.3.19",
     "yaml": "2.8.3"
