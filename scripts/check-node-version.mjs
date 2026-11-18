@@ -1,4 +1,4 @@
-const MIN_NODE_VERSION = "20.19.0";
+const MIN_NODE_VERSION = "22.22.0";
 const MAX_NODE_MAJOR = 24;
 const PREFERRED_NODE_MAJOR = 22;
 
